@@ -1,39 +1,34 @@
 ---
-import {
-	getEmDashEntry,
-	getSeoMeta,
-	decodeSlug,
-	getSiteSettings,
-} from "emdash";
-import { Image, PortableText, WidgetArea } from "emdash/ui";
-import Base from "../../layouts/Base.astro";
-import { resolveStarterSiteIdentity } from "../../utils/site-identity";
+import { decodeSlug, getEmDashEntry, getSeoMeta, getSiteSettings } from 'emdash'
+import { Image, PortableText, WidgetArea } from 'emdash/ui'
+import Base from '../../layouts/Base.astro'
+import { resolveStarterSiteIdentity } from '../../utils/site-identity'
 
-const slug = decodeSlug(Astro.params.slug);
+const slug = decodeSlug(Astro.params.slug)
 
 if (!slug) {
-	return Astro.redirect("/404");
+    return Astro.redirect('/404')
 }
 
-const { entry: post, cacheHint } = await getEmDashEntry("posts", slug);
+const { entry: post, cacheHint } = await getEmDashEntry('posts', slug)
 
 if (!post) {
-	return Astro.redirect("/404");
+    return Astro.redirect('/404')
 }
 
-if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
-const { siteTitle } = resolveStarterSiteIdentity(await getSiteSettings());
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint)
+const { siteTitle } = resolveStarterSiteIdentity(await getSiteSettings())
 
 // SEO meta from content fields
 const seo = getSeoMeta(post, {
-	siteTitle,
-	siteUrl: Astro.url.origin,
-	path: Astro.url.pathname.replace(/\/$/, ""),
-});
+    siteTitle,
+    siteUrl: Astro.url.origin,
+    path: Astro.url.pathname.replace(/\/$/, ''),
+})
 
 // Taxonomy terms are already hydrated onto the entry by getEmDashEntry.
-const tags = post.data.terms?.tag ?? [];
-const categories = post.data.terms?.category ?? [];
+const tags = post.data.terms?.tag ?? []
+const categories = post.data.terms?.category ?? []
 ---
 
 <Base

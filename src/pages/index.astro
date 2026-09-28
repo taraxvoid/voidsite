@@ -1,17 +1,17 @@
 ---
-import { getEmDashCollection, getSiteSettings } from "emdash";
-import { Image } from "emdash/ui";
-import Base from "../layouts/Base.astro";
-import { resolveStarterSiteIdentity } from "../utils/site-identity";
+import { getEmDashCollection, getSiteSettings } from 'emdash'
+import { Image } from 'emdash/ui'
+import Base from '../layouts/Base.astro'
+import { resolveStarterSiteIdentity } from '../utils/site-identity'
 
-const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
-	orderBy: { published_at: "desc" },
-	limit: 10,
-});
+const { entries: posts, cacheHint } = await getEmDashCollection('posts', {
+    orderBy: { published_at: 'desc' },
+    limit: 10,
+})
 const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
-	await getSiteSettings(),
-);
-if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+    await getSiteSettings(),
+)
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint)
 ---
 
 <Base title={siteTitle} description={siteTagline}>
