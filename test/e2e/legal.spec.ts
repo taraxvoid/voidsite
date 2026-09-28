@@ -64,8 +64,16 @@ test('the privacy page describes the storage the site really uses', async ({
 }) => {
     await page.goto('/privacy')
     const text = await page.locator('main').innerText()
-    // Always: the theme key and the editor cookies documented from emdash.
-    for (const item of ['theme', 'emdash_session', 'emdash_oauth_csrf']) {
+    // Always: the theme key and the editor cookies and keys (checked against a
+    // real sign-in by editor-storage.spec.ts).
+    for (const item of [
+        'theme',
+        'astro-session',
+        '__em_d1_bookmark',
+        'emdash_oauth_csrf',
+        'emdash-editor',
+        'emdash-toolbar-labels',
+    ]) {
         expect(text).toContain(item)
     }
     // Google wording appears exactly when the build has a Google tag.

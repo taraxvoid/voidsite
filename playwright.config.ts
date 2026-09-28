@@ -21,7 +21,8 @@ async function getFreePort(): Promise<number> {
 if (!process.env.CI && !process.env.PLAYWRIGHT_TEST_PORT) {
     process.env.PLAYWRIGHT_TEST_PORT = String(await getFreePort())
 }
-const PORT = process.env.CI ? 4242 : process.env.PLAYWRIGHT_TEST_PORT
+// Outside CI a free port was picked above; CI (or a caller) can fix one.
+const PORT = process.env.PLAYWRIGHT_TEST_PORT ?? 4242
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`
 
 export default defineConfig({

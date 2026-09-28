@@ -87,6 +87,12 @@ jobs:
       - name: End-to-end tests (Tag Manager build)
         run: pnpm run test:e2e:gtm
 
+      # Runs Emdash's setup wizard with a virtual passkey and checks the
+      # cookies and storage a signed-in editor gets against the privacy page.
+      # Last, because it wipes the local D1 and patches the built config.
+      - name: End-to-end tests (signed-in editor)
+        run: pnpm run test:e2e:editor
+
       - name: Upload failure reports
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

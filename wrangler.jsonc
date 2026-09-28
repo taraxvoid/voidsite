@@ -4,6 +4,9 @@
     "main": "./src/worker.ts",
     "compatibility_date": "2026-02-24",
     "compatibility_flags": ["nodejs_compat"],
+    // Emdash refuses production setup without its public origin, and derives
+    // the passkey relying-party id from it. Set it to the production URL.
+    "vars": { "EMDASH_SITE_URL": "https://example.com" },
     "d1_databases": [
         {
             "binding": "DB",

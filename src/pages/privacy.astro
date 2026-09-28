@@ -68,12 +68,18 @@ const host = siteConfig.subProcessors[0]?.name ?? 'our hosting provider'
     }
     <p>
         People who edit the site's content (editors) sign in to an admin area.
-        For them only, the site sets two essential cookies:
+        For them only, the site sets these essential cookies, all cleared when
+        the browser session ends:
     </p>
     <ul>
         <li>
-            <code>emdash_session</code>: keeps you signed in. Deleted when your
-            sign-in session ends.
+            <code>astro-session</code>: keeps you signed in. Only readable by
+            the server.
+        </li>
+        <li>
+            <code>__em_d1_bookmark</code>: tells the database which of your
+            changes it has already seen, so you see your own edits straight
+            away. Only readable by the server.
         </li>
         <li>
             <code>emdash_oauth_csrf</code>: protects the sign-in flow against
@@ -102,8 +108,8 @@ const host = siteConfig.subProcessors[0]?.name ?? 'our hosting provider'
         }
         <li>
             Editors only: <code>emdash-editor</code>,
-            <code>emdash-toolbar-dismissed</code> and
-            <code>emdash-toolbar-labels</code> remember editing-toolbar
+            <code>emdash-toolbar-labels</code> and (if you dismiss the toolbar)
+            <code>emdash-toolbar-dismissed</code> remember editing-toolbar
             preferences.
         </li>
     </ul>

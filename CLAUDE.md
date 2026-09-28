@@ -14,6 +14,7 @@ pnpm run lint            # biome check (format + lint); `pnpm run format` fixes
 pnpm run check           # astro check
 pnpm run test:unit       # vitest: test/unit and test/pages
 pnpm run test:e2e        # builds with PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123, then playwright
+pnpm run test:e2e:editor # signed-in editor: wizard + virtual passkey, verifies cookies/storage vs the privacy page
 pnpm run test:e2e:gtm    # same consent specs against a Tag-Manager-only build
 pnpm run check:placeholders  # deploy gate: template placeholders must be replaced
 pnpm run check:licenses  # fails on GPL/AGPL etc.; one reviewed exception, see the script
@@ -32,6 +33,7 @@ Hooks (husky): pre-commit formats and re-stages, then runs actionlint, `check`, 
 
 ## Rules that matter
 
+- **Emdash needs `EMDASH_SITE_URL`** (`vars` in wrangler.jsonc, placeholder `example.com`): production setup refuses without it and passkeys use it as their relying-party id.
 - **Privacy copy must match behavior.** Analytics wording is driven by `src/lib/analytics.ts`; if you add a cookie, storage key, third-party request or vendor, update `privacy.astro` and `site.config.ts` in the same change, and extend `test/e2e/legal.spec.ts`.
 - **Consent.** Google tags load only after an explicit accept; GPC counts as a decline; only analytics is ever granted (ads signals stay denied). Don't add scripts that bypass `src/lib/consent.ts`.
 - **Theme.** No `data-theme` means follow the browser (also the no-JS behavior). The inline script in `HeadMeta.astro` mirrors `src/lib/theme.ts`; keep them in sync, and `--bg` in `global.css` must match `THEME_COLORS`.
