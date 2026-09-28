@@ -116,3 +116,50 @@ test.describe('narrow screens', () => {
         })
     }
 })
+
+// The accessibility page promises these two things, so they are tested here.
+test.describe('without JavaScript', () => {
+    test.use({ javaScriptEnabled: false })
+
+    for (const path of paths) {
+        test(`${path} still shows its core content`, async ({ page }) => {
+            await page.goto(path)
+            await expect(page.getByRole('main')).toBeVisible()
+            if (path !== '/') {
+                await expect(
+                    page.getByRole('heading', { level: 1 }),
+                ).toBeVisible()
+                expect(
+                    (await page.getByRole('main').innerText()).length,
+                ).toBeGreaterThan(200)
+            }
+        })
+    }
+})
+
+test.describe('motion preferences', () => {
+    const transition = (page: Page) =>
+        page
+            .locator('.theme-toggle label')
+            .first()
+            .evaluate((el) => getComputedStyle(el).transitionDuration)
+
+    test.describe('reduced', () => {
+        test.use({ reducedMotion: 'reduce' })
+
+        test('the theme toggle does not animate', async ({ page }) => {
+            await page.goto('/')
+            expect(await transition(page)).toBe('0s')
+        })
+    })
+
+    test.describe('no preference', () => {
+        test.use({ reducedMotion: 'no-preference' })
+
+        // Guards the test above: it must be able to fail.
+        test('the theme toggle animates', async ({ page }) => {
+            await page.goto('/')
+            expect(await transition(page)).toBe('0.15s, 0.15s')
+        })
+    })
+})

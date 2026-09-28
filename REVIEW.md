@@ -12,5 +12,5 @@
 - **New page**: added to `paths` in the a11y and site e2e specs, one `h1`, canonical link, linked from the footer if it is a legal page.
 - **Theme or CSS**: colors come from tokens in `global.css`; contrast holds in light and dark; nothing relies on hover or color alone.
 - **Wrangler or deploy**: production resources untouched by previews; `previews` block mirrors every binding the app reads; no secrets in the repo.
-- **Dependencies**: `pnpm run check:licenses` and `pnpm audit --prod` are clean; any new license exception is pinned to an exact version with a reason.
+- **Dependencies**: `pnpm run check:licenses` and `pnpm audit` are clean; any new license exception is pinned to an exact version with a reason.
 - **Emdash upgrades**: run the setup wizard on a fresh D1, confirm `/_emdash/admin`, and check the legal pages' cookie and storage lists against a signed-in session.

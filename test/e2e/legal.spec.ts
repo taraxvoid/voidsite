@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { siteConfig } from '../../src/site.config'
 
 const pages = [
     { path: '/privacy', heading: 'Privacy' },
@@ -38,9 +39,16 @@ test('the footer links to every enabled legal page', async ({ page }) => {
     )
 })
 
-test('optional pages are off by default', async ({ request }) => {
-    for (const path of ['/sub-processors', '/do-not-sell']) {
-        expect((await request.get(path)).status()).toBe(404)
+const optional = [
+    { path: '/sub-processors', enabled: siteConfig.legal.subProcessorsPage },
+    { path: '/do-not-sell', enabled: siteConfig.legal.doNotSellPage },
+]
+
+test('optional pages exist exactly when site.config enables them', async ({
+    request,
+}) => {
+    for (const { path, enabled } of optional) {
+        expect((await request.get(path)).status()).toBe(enabled ? 200 : 404)
     }
 })
 
@@ -61,7 +69,9 @@ test('the privacy page describes the storage the site really uses', async ({
         expect(text).toContain(item)
     }
     // Google wording appears exactly when the build has a Google tag.
-    const hasGoogle = Boolean(process.env.PUBLIC_GA_MEASUREMENT_ID)
+    const hasGoogle = Boolean(
+        process.env.PUBLIC_GA_MEASUREMENT_ID || process.env.PUBLIC_GTM_ID,
+    )
     if (hasGoogle) {
         for (const item of ['_ga', 'consent', 'Cookie settings']) {
             expect(text).toContain(item)

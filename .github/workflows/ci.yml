@@ -83,6 +83,10 @@ jobs:
       - name: End-to-end tests
         run: pnpm run test:e2e
 
+      # A second build with only a Tag Manager id, to cover that path too.
+      - name: End-to-end tests (Tag Manager build)
+        run: pnpm run test:e2e:gtm
+
       - name: Upload failure reports
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -100,6 +104,7 @@ jobs:
       github.event_name == 'pull_request'
       && github.event.pull_request.draft != true
       && github.event.pull_request.head.repo.full_name == github.repository
+      && vars.CLOUDFLARE_ACCOUNT_ID != ''
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -177,7 +182,12 @@ jobs:
   deploy:
     name: Deploy
     needs: validate
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Skipped until Cloudflare is configured (variable CLOUDFLARE_ACCOUNT_ID),
+    # so a fresh copy of the template isn't red on day one.
+    if: >-
+      github.event_name == 'push'
+      && github.ref == 'refs/heads/main'
+      && vars.CLOUDFLARE_ACCOUNT_ID != ''
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: prod
@@ -187,6 +197,11 @@ jobs:
           persist-credentials: false
 
       - uses: ./.github/actions/setup
+
+      # Production must not ship the template's example.com / "your
+      # jurisdiction" text or the placeholder preview D1 id.
+      - name: Check template placeholders are replaced
+        run: pnpm run check:placeholders
 
       - name: Build
         run: pnpm run build

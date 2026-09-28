@@ -14,11 +14,13 @@ pnpm run lint            # biome check (format + lint); `pnpm run format` fixes
 pnpm run check           # astro check
 pnpm run test:unit       # vitest: test/unit and test/pages
 pnpm run test:e2e        # builds with PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123, then playwright
+pnpm run test:e2e:gtm    # same consent specs against a Tag-Manager-only build
+pnpm run check:placeholders  # deploy gate: template placeholders must be replaced
 pnpm run check:licenses  # fails on GPL/AGPL etc.; one reviewed exception, see the script
 pnpm run test:push       # lint + check + unit + e2e (pre-push hook)
 ```
 
-Hooks (husky): pre-commit formats and re-stages, then runs actionlint, `check`, `test:unit`, and (when the lockfile changes) licenses and `pnpm audit --prod`. Never bypass with `--no-verify`; fix the cause.
+Hooks (husky): pre-commit formats and re-stages, then runs actionlint, `check`, `test:unit`, and (when the lockfile changes) licenses and `pnpm audit`. Never bypass with `--no-verify`; fix the cause.
 
 ## Layout
 

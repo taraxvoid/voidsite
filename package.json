@@ -20,11 +20,14 @@
         "test:e2e": "pnpm run build:e2e && PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123 playwright test",
         "test:e2e:a11y": "playwright test test/e2e/a11y.spec.ts",
         "check:licenses": "node scripts/check-licenses.ts",
-        "audit": "pnpm audit --audit-level high --prod",
+        "audit": "pnpm audit --audit-level high",
         "prepare": "husky",
         "lint:actions": "sh scripts/lint-actions.sh",
         "test:push": "pnpm run lint && pnpm run check && pnpm run test:unit && pnpm run test:e2e",
-        "build:e2e": "PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123 astro build"
+        "build:e2e": "PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123 astro build",
+        "check:placeholders": "node scripts/check-placeholders.ts",
+        "build:e2e:gtm": "PUBLIC_GTM_ID=GTM-E2ETEST123 astro build",
+        "test:e2e:gtm": "pnpm run build:e2e:gtm && PUBLIC_GTM_ID=GTM-E2ETEST123 playwright test test/e2e/consent-gtm.spec.ts test/e2e/legal.spec.ts"
     },
     "dependencies": {
         "@astrojs/cloudflare": "^14.3.1",
@@ -40,7 +43,6 @@
         "@axe-core/playwright": "^4.13.0",
         "@biomejs/biome": "^2.5.14",
         "@cloudflare/workers-types": "^5.20260820.1",
-        "@lhci/cli": "^0.15.1",
         "@lizenz/checker": "^0.0.2",
         "@playwright/test": "^1.63.0",
         "husky": "^9.1.7",
