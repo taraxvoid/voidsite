@@ -1,55 +1,67 @@
-# EmDash Starter Template (Cloudflare)
+# chantilly
 
-A general-purpose starting point for building sites with [EmDash](https://github.com/emdash-cms/emdash) on Cloudflare Workers. Includes posts, pages, categories, and tags with minimal styling -- designed as a base you can build on rather than a finished theme.
+A GitHub template for content sites on [Emdash](https://github.com/emdash-cms/emdash) (an Astro CMS) hosted on Cloudflare Workers. Editors change content in Emdash's admin UI, with no git. Developers get CI, previews, and the privacy and accessibility pages sites usually forget.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/emdash-cms/templates/tree/main/starter-cloudflare)
+Starts from Emdash's official Cloudflare `starter` template (D1, R2, `@astrojs/cloudflare`), plus:
 
-## What's Included
+- **Legal pages**: privacy, accessibility, terms, and optional sub-processors and do-not-sell. The text follows the build's real configuration, and tests check it against the site's actual cookies and storage.
+- **Light / dark / system theme**, native CSS (`color-scheme`, `light-dark()`), no flash, works without JS.
+- **Analytics with consent**: cookieless PostHog (no banner needed) and/or Google (GA4 or Tag Manager) behind a consent banner, denied by default. Nothing loads or is sent to Google before "Accept".
+- **CI** for lint, types, unit and e2e tests (axe in both themes), a production deploy, and a Worker Preview per PR with its own D1, R2 and KV.
+- `robots.txt` (Content-Signal; AI training refused unless you opt in), `llms.txt`, canonical links.
 
-- Posts with category and tag archives
-- Static pages via slug routing
-- Seed data with demo content
-- D1 database and R2 storage pre-configured
+> The legal pages are a starting point, not legal advice. Review them with counsel before launch, and re-check them whenever the site starts collecting something new.
 
-## Pages
+## Use this template
 
-| Page | Route |
-|---|---|
-| Homepage | `/` |
-| All posts | `/posts` |
-| Single post | `/posts/:slug` |
-| Category archive | `/category/:slug` |
-| Tag archive | `/tag/:slug` |
-| Static pages | `/:slug` |
-| 404 | fallback |
+Click **Use this template** on GitHub. Then, in your copy:
 
-## Infrastructure
+1. **Names.** Rename `chantilly` in `package.json`, and in `wrangler.jsonc` (Worker, D1 and R2 names, both top level and `previews`).
+2. **Site details.** Edit `src/site.config.ts`: name, URL, legal entity, contact and privacy emails, jurisdiction, and the legal pages' review date. That file drives the footer and every legal page.
+3. **Cloudflare resources.** One-time, from the project directory:
+   ```fish
+   pnpm wrangler login
+   pnpm wrangler d1 create chantilly-preview        # copy its id into previews.d1_databases
+   pnpm wrangler r2 bucket create chantilly-media
+   pnpm wrangler r2 bucket create chantilly-media-preview
+   ```
+   Production D1 is created on the first deploy (the starter's behaviour); the preview database needs its id in `wrangler.jsonc` because previews don't inherit production settings.
+4. **Encryption key.** Emdash needs `EMDASH_ENCRYPTION_KEY` (it encrypts plugin secrets and checks it at startup). Generate one per environment; never reuse or commit it:
+   ```fish
+   printf 'emdash_enc_v1_%s' (openssl rand -base64 32 | tr '+/' '-_' | tr -d '=') > .env   # local dev (gitignored)
+   pnpm wrangler secret put EMDASH_ENCRYPTION_KEY                                        # production
+   ```
+5. **GitHub.** Add the repository secret `CLOUDFLARE_API_TOKEN` (Workers, D1, R2 edit) and the variable `CLOUDFLARE_ACCOUNT_ID`. Add a second key as secret `PREVIEW_EMDASH_ENCRYPTION_KEY` for previews. Create an environment named `prod` (add required reviewers if you want a gate). Optional: `GITLEAKS_LICENSE`.
+6. **Analytics (optional).** Set repository *variables*: `PUBLIC_POSTHOG_PROJECT_TOKEN` (and `PUBLIC_POSTHOG_HOST`), and/or `PUBLIC_GA_MEASUREMENT_ID` (`G-…`) or `PUBLIC_GTM_ID` (`GTM-…`). If both a GA4 id and a GTM id are set, GTM wins, because GA4 normally lives inside the container. The banner, footer "Cookie settings" link, privacy wording and sub-processor list appear automatically when a Google tag is set. In Google Analytics keep Google signals and ad personalization off, and if you use GTM, make sure every tag respects Consent Mode.
+7. **First run.** `pnpm install`, `pnpm dev`, open `/_emdash/admin`, and finish the setup wizard (this creates the first admin passkey and seeds demo content). Invite editors from the admin.
+8. **After the first editor signs in**, open the site in a browser and confirm the cookies and localStorage keys match the privacy page (`emdash_session`, `emdash_oauth_csrf`, `emdash-editor`, `emdash-toolbar-*`). They were taken from Emdash's source, not observed in a signed-in session, so verify them once.
 
-- **Runtime:** Cloudflare Workers
-- **Database:** D1
-- **Storage:** R2
-- **Framework:** Astro with `@astrojs/cloudflare`
+## Everyday commands
 
-## Local Development
-
-```bash
-pnpm install
-pnpm dev
+```fish
+pnpm dev               # http://localhost:4321, admin at /_emdash/admin
+pnpm run lint          # Biome
+pnpm run check         # astro check (types)
+pnpm run test:unit     # Vitest
+pnpm run test:e2e      # builds with a fake GA id, then Playwright (mobile + desktop, axe)
+pnpm run test:push     # what the pre-push hook runs
+pnpm run check:licenses
 ```
 
-Open http://localhost:4321/_emdash/admin and complete the setup wizard. EmDash runs database migrations and applies the starter seed during setup. The site is available at http://localhost:4321.
+Requires the Node and pnpm versions in `package.json` (`volta` block); with Volta they are picked up automatically.
 
-## Deploying
+## How it deploys
 
-```bash
-pnpm wrangler login
-pnpm deploy
-```
+- Push to `main`: validate, then deploy to production (the `prod` environment) and smoke-test the live site.
+- Pull request: validate, then `wrangler preview` (open beta) publishes an isolated Preview named after the branch, using the `previews` D1, R2 and KV in `wrangler.jsonc`, and comments its URL on the PR. Previews can't write to production content. If you protect previews with Cloudflare Access, the smoke tests need to send Access headers.
 
-The first deployment provisions the named D1 database and R2 bucket from `wrangler.jsonc`. See [Deploy to Cloudflare](https://docs.emdashcms.com/deployment/cloudflare/) for production setup, or use the deploy button above.
+Unverified until the first real run: the preview job's URL extraction (`wrangler preview --json`'s shape isn't documented yet) and whether KV and D1 auto-provision for previews. Check the first PR's job log.
 
-## See Also
+## Editing content
 
-- [Node.js variant](../starter) -- same template using SQLite and local file storage
-- [All templates](../)
-- [EmDash documentation](https://docs.emdashcms.com/)
+Editors use `/_emdash/admin`. Content models live in `seed/seed.json`; `AGENTS.md` and `.agents/skills/` (from Emdash) describe them for coding agents. The public sitemap at `/sitemap.xml` and its collection sitemaps come from Emdash.
+
+## Notes
+
+- One license exception: `@wordpress/block-serialization-default-parser` (GPL-2.0-or-later) comes in through Emdash's WordPress import and is allow-listed at an exact version in `scripts/check-licenses.ts`, with the reasoning. Revisit it if you ship the bundle to others.
+- `docs/voidflow-followups.md` lists what voidflow needs before this repo can use its shared CI.
