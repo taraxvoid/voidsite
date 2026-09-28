@@ -68,3 +68,22 @@ test('the privacy page describes the storage the site really uses', async ({
         }
     }
 })
+
+test('robots.txt is ours rather than the emdash default, and names the real sitemap', async ({
+    request,
+}) => {
+    const body = await (await request.get('/robots.txt')).text()
+    expect(body).toContain('Content-Signal: ai-train=no')
+    expect(body).toContain('Disallow: /_emdash/')
+    expect(body).toMatch(/Sitemap: http.*\/sitemap\.xml/)
+    const sitemap = await request.get('/sitemap.xml')
+    expect(sitemap.status()).toBe(200)
+})
+
+test('llms.txt describes the site', async ({ request }) => {
+    const response = await request.get('/llms.txt')
+    expect(response.status()).toBe(200)
+    const body = await response.text()
+    expect(body).toMatch(/^# .+/)
+    expect(body).toContain('/privacy')
+})

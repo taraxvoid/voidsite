@@ -5,6 +5,8 @@
 export const siteConfig = {
     /** Public name, used in legal copy and metadata fallbacks. */
     name: 'Chantilly',
+    /** One sentence about the site, used in llms.txt. */
+    description: 'A content site built with Astro and Emdash.',
     /** Canonical origin, no trailing slash. */
     url: 'https://example.com',
     /** Who runs the site, as named in the legal pages. */
@@ -18,6 +20,10 @@ export const siteConfig = {
      * tracker, say). Leave empty to use the contact email only.
      */
     feedbackUrl: '',
+    crawlers: {
+        /** Let AI companies train on the site. Off unless you choose otherwise. */
+        aiTraining: false,
+    },
     legal: {
         /** ISO date the legal pages were last reviewed. Update on each edit. */
         updated: '2026-09-28',
