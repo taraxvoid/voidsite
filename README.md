@@ -4,7 +4,7 @@ A GitHub template for content sites on [Emdash](https://github.com/emdash-cms/em
 
 Starts from Emdash's official Cloudflare `starter` template (D1, R2, `@astrojs/cloudflare`), plus:
 
-- **Legal pages**: privacy, accessibility, terms, and optional sub-processors and do-not-sell. The text follows the build's real configuration, and tests check it against the site's actual cookies and storage.
+- **Legal pages**: privacy, accessibility, terms, and optional sub-processors and do-not-sell. The text follows the build's real configuration, and tests check that visitors get no cookies or storage before choosing and that the page names what the site uses.
 - **Light / dark / system theme**, native CSS (`color-scheme`, `light-dark()`), no flash, works without JS.
 - **Analytics with consent**: cookieless PostHog (no banner needed) and/or Google (GA4 or Tag Manager) behind a consent banner, denied by default. Nothing loads or is sent to Google before "Accept".
 - **CI** for lint, types, unit and e2e tests (axe in both themes), a production deploy, and a Worker Preview per PR with its own D1, R2 and KV.
@@ -63,5 +63,6 @@ Editors use `/_emdash/admin`. Content models live in `seed/seed.json`; `AGENTS.m
 
 ## Notes
 
+- **Workers plan.** The bundled Worker is about 16 MiB (4.1 MiB gzipped) with Emdash, over the free plan's 3 MiB gzip limit, so production needs Workers Paid. That is Emdash's own footprint, not something chantilly adds.
 - One license exception: `@wordpress/block-serialization-default-parser` (GPL-2.0-or-later) comes in through Emdash's WordPress import and is allow-listed at an exact version in `scripts/check-licenses.ts`, with the reasoning. Revisit it if you ship the bundle to others.
 - `docs/voidflow-followups.md` lists what voidflow needs before this repo can use its shared CI.
