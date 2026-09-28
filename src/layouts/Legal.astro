@@ -1,0 +1,26 @@
+---
+import { siteConfig } from '../site.config'
+import Base from './Base.astro'
+
+interface Props {
+    title: string
+    description?: string
+}
+
+const { title, description } = Astro.props
+---
+
+<Base title={title} description={description}>
+    <article class="prose">
+        <h1>{title}</h1>
+        <p class="meta">
+            Last updated {siteConfig.legal.updated}
+            <span aria-hidden="true"> · </span>
+            <span>
+                Site version {__BUILD_VERSION__} ({__BUILD_SHA__}), built{' '}
+                {__BUILD_DATE__}
+            </span>
+        </p>
+        <slot />
+    </article>
+</Base>

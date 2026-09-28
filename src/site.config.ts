@@ -21,6 +21,8 @@ export const siteConfig = {
     legal: {
         /** ISO date the legal pages were last reviewed. Update on each edit. */
         updated: '2026-09-28',
+        /** Whose law governs the terms, e.g. 'the State of Nebraska, USA'. */
+        jurisdiction: 'your jurisdiction',
         /** Show the CCPA/CPRA opt-out page. Only needed if you sell or share data. */
         doNotSellPage: false,
         /** Show the sub-processors page. Useful once you use several vendors. */

@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 
 // Add every public page here as it is created.
-const paths = ['/']
+const paths = ['/', '/privacy', '/terms', '/accessibility']
 
 // Deliberately wcag2a/aa + 2.2 AA rules only; the accessibility page claims
 // no conformance level, but these are the ones this template commits to.

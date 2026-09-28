@@ -1,0 +1,73 @@
+---
+import Legal from '../layouts/Legal.astro'
+import { siteConfig } from '../site.config'
+
+// Deliberately claims no WCAG conformance level: only list commitments the
+// test suite (axe, keyboard and reduced-motion e2e) actually backs up.
+---
+
+<Legal
+    title="Accessibility"
+    description={`How ${siteConfig.name} approaches accessibility, what we know falls short, and how to tell us.`}
+>
+    <p>
+        We want {siteConfig.name} to work for as many people as possible.
+        Accessibility is a continual process and there is always more work to
+        do, so this page says what we aim for and where we know we fall short.
+    </p>
+
+    <h2>Our approach</h2>
+    <p>
+        We build to
+        <a href="https://www.w3.org/TR/WCAG22/"
+            >WCAG 2.2</a
+        >
+        as our guideline and check pages automatically with axe on every change.
+        We don't claim full conformance at any level: automated checks find only
+        part of the problems.
+    </p>
+
+    <h2>What we do</h2>
+    <ul>
+        <li>Use semantic HTML, with ARIA only where it's needed.</li>
+        <li>Size text relatively, so browser zoom and font settings work.</li>
+        <li>Make everything usable with a keyboard, with visible focus.</li>
+        <li>Provide a "skip to content" link.</li>
+        <li>
+            Respect your <code>prefers-reduced-motion</code> and
+            <code>prefers-color-scheme</code> settings, and offer a manual
+            light, dark or system theme switch.
+        </li>
+        <li>Keep text contrast sufficient in both light and dark themes.</li>
+        <li>Keep core content available without JavaScript.</li>
+    </ul>
+
+    <h2>Known limitations</h2>
+    <ul>
+        <li>
+            Content written by editors, and third-party content they embed, may
+            not meet accessibility standards. We fix problems we're told about.
+        </li>
+        <li>
+            The editing (admin) area is a separate product with its own
+            accessibility, and isn't covered by the checks above.
+        </li>
+    </ul>
+
+    <h2>Feedback</h2>
+    <p>
+        If something here is hard to use, tell us at
+        <a href={`mailto:${siteConfig.contactEmail}`}
+            >{siteConfig.contactEmail}</a
+        >
+        {
+            siteConfig.feedbackUrl && (
+                <>
+                    {' '}
+                    or <a href={siteConfig.feedbackUrl}>in public</a>
+                </>
+            )
+        }. We take these reports seriously and will do our best to address
+        them.
+    </p>
+</Legal>

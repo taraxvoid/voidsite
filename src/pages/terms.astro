@@ -1,0 +1,56 @@
+---
+import Legal from '../layouts/Legal.astro'
+import { siteConfig } from '../site.config'
+
+// Template copy, not legal advice: review it with counsel before launch.
+---
+
+<Legal
+    title="Terms"
+    description={`The terms for using ${siteConfig.name}.`}
+>
+    <p>
+        These terms cover your use of {siteConfig.name} ({siteConfig.url}),
+        run by {siteConfig.entity}. By using the site you agree to them. If you
+        don't agree, please don't use the site.
+    </p>
+
+    <h2>Using the site</h2>
+    <p>
+        You may read and share links to the site. Please don't attempt to
+        break, overload or gain unauthorized access to it, or to its admin
+        area.
+    </p>
+
+    <h2>Content</h2>
+    <p>
+        Content on the site belongs to {siteConfig.entity} or its authors
+        unless it says otherwise. You may quote small excerpts with credit and
+        a link. For anything more, ask us first.
+    </p>
+
+    <h2>No warranty</h2>
+    <p>
+        The site and its content are provided "as is". We try to keep things
+        accurate and available, but can't promise that they will be.
+    </p>
+
+    <h2>Limit of liability</h2>
+    <p>
+        To the extent the law allows, {siteConfig.entity} isn't liable for
+        losses arising from your use of the site or from links to other sites.
+    </p>
+
+    <h2>Changes and governing law</h2>
+    <p>
+        We may change these terms; the date above shows the current version.
+        They are governed by the laws of {siteConfig.legal.jurisdiction}.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+        <a href={`mailto:${siteConfig.contactEmail}`}
+            >{siteConfig.contactEmail}</a
+        >
+    </p>
+</Legal>

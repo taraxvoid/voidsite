@@ -17,13 +17,14 @@
         "lint": "biome check .",
         "format": "biome check --write .",
         "test:unit": "vitest run",
-        "test:e2e": "playwright test",
+        "test:e2e": "pnpm run build:e2e && PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123 playwright test",
         "test:e2e:a11y": "playwright test test/e2e/a11y.spec.ts",
         "check:licenses": "node scripts/check-licenses.ts",
         "audit": "pnpm audit --audit-level high --prod",
         "prepare": "husky",
         "lint:actions": "sh scripts/lint-actions.sh",
-        "test:push": "pnpm run lint && pnpm run check && pnpm run build && pnpm run test:unit && pnpm run test:e2e"
+        "test:push": "pnpm run lint && pnpm run check && pnpm run test:unit && pnpm run test:e2e",
+        "build:e2e": "PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123 astro build"
     },
     "dependencies": {
         "@astrojs/cloudflare": "^14.3.1",
