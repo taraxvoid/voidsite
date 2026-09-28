@@ -12,3 +12,8 @@ data.db
 !.env.example
 .dev.vars
 .dev.vars.*
+
+# Test output
+test-results
+playwright-report
+.lighthouseci
