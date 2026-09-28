@@ -16,6 +16,26 @@
 			"bucket_name": "chantilly-media",
 		},
 	],
+	// Worker Previews (`wrangler preview`, needs Wrangler >= 4.135). Previews do
+	// not inherit production settings, so point them at separate resources: a PR
+	// preview must never write to production content. Create these once
+	// (see README) and replace the placeholder id. Cron triggers and routes
+	// stay top-level only; they do not apply to previews.
+	"previews": {
+		"d1_databases": [
+			{
+				"binding": "DB",
+				"database_name": "chantilly-preview",
+				"database_id": "REPLACE-WITH-PREVIEW-D1-ID",
+			},
+		],
+		"r2_buckets": [
+			{
+				"binding": "MEDIA",
+				"bucket_name": "chantilly-media-preview",
+			},
+		],
+	},
 	// Sandboxed plugins require Worker Loader, available on Workers paid plans. Uncomment to enable:
 	// "worker_loaders": [{ "binding": "LOADER" }],
 	// General maintenance cron trigger
