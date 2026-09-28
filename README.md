@@ -26,11 +26,13 @@ Click **Use this template** on GitHub. Then, in your copy:
    pnpm wrangler r2 bucket create chantilly-media-preview
    ```
    Production D1 is created on the first deploy (the starter's behaviour); the preview database needs its id in `wrangler.jsonc` because previews don't inherit production settings.
-4. **Encryption key.** Emdash needs `EMDASH_ENCRYPTION_KEY` (it encrypts plugin secrets and checks it at startup). Generate one per environment; never reuse or commit it:
+4. **Encryption key.** Emdash needs `EMDASH_ENCRYPTION_KEY` (it encrypts plugin secrets and checks it at startup). Generate one per environment with Emdash's own tool; never reuse or commit it:
    ```fish
-   printf 'emdash_enc_v1_%s' (openssl rand -base64 32 | tr '+/' '-_' | tr -d '=') > .env   # local dev (gitignored)
-   pnpm wrangler secret put EMDASH_ENCRYPTION_KEY                                        # production
+   pnpm exec emdash secrets generate --write .env   # local dev (.env is gitignored)
+   pnpm exec emdash secrets generate                # prints a key; then:
+   pnpm wrangler secret put EMDASH_ENCRYPTION_KEY   # production, paste the key
    ```
+   Use a different key for the `PREVIEW_EMDASH_ENCRYPTION_KEY` GitHub secret (step 5).
 5. **GitHub.** Add the repository secret `CLOUDFLARE_API_TOKEN` (Workers, D1, R2 edit) and the variable `CLOUDFLARE_ACCOUNT_ID`. Add a second key as secret `PREVIEW_EMDASH_ENCRYPTION_KEY` for previews. Create an environment named `prod` (add required reviewers if you want a gate). Optional: `GITLEAKS_LICENSE`.
 6. **Analytics (optional).** Set repository *variables*: `PUBLIC_POSTHOG_PROJECT_TOKEN` (and `PUBLIC_POSTHOG_HOST`), and/or `PUBLIC_GA_MEASUREMENT_ID` (`G-…`) or `PUBLIC_GTM_ID` (`GTM-…`). If both a GA4 id and a GTM id are set, GTM wins, because GA4 normally lives inside the container. The banner, footer "Cookie settings" link, privacy wording and sub-processor list appear automatically when a Google tag is set. In Google Analytics keep Google signals and ad personalization off, and if you use GTM, make sure every tag respects Consent Mode.
 7. **First run.** `pnpm install`, `pnpm dev`, open `/_emdash/admin`, and finish the setup wizard (this creates the first admin passkey and seeds demo content). Invite editors from the admin.
