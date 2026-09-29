@@ -101,15 +101,18 @@ jobs:
           path: |
             playwright-report/
             test-results/
+          if-no-files-found: ignore
 
   preview:
     name: Preview
     needs: validate
-    # Forks don't get repository secrets, so they can't deploy.
+    # Forks don't get repository secrets, so they can't deploy. The template
+    # repo itself has nothing to deploy either.
     if: >-
       github.event_name == 'pull_request'
       && github.event.pull_request.draft != true
       && github.event.pull_request.head.repo.full_name == github.repository
+      && !github.event.repository.is_template
       && vars.CLOUDFLARE_ACCOUNT_ID != ''
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -184,15 +187,18 @@ jobs:
           path: |
             playwright-report/
             test-results/
+          if-no-files-found: ignore
 
   deploy:
     name: Deploy
     needs: validate
-    # Skipped until Cloudflare is configured (variable CLOUDFLARE_ACCOUNT_ID),
-    # so a fresh copy of the template isn't red on day one.
+    # Skipped on the template repo itself (it can never pass the placeholder
+    # check) and until Cloudflare is configured (variable
+    # CLOUDFLARE_ACCOUNT_ID), so a fresh copy isn't red on day one.
     if: >-
       github.event_name == 'push'
       && github.ref == 'refs/heads/main'
+      && !github.event.repository.is_template
       && vars.CLOUDFLARE_ACCOUNT_ID != ''
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -245,3 +251,4 @@ jobs:
           path: |
             playwright-report/
             test-results/
+          if-no-files-found: ignore
