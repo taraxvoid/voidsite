@@ -1,4 +1,4 @@
-# chantilly
+# voidsite
 
 A GitHub template for content sites on [Emdash](https://github.com/emdash-cms/emdash) (an Astro CMS) hosted on Cloudflare Workers. Editors change content in Emdash's admin UI, with no git. Developers get CI, previews, and the privacy and accessibility pages sites usually forget.
 
@@ -16,15 +16,15 @@ Starts from Emdash's official Cloudflare `starter` template (D1, R2, `@astrojs/c
 
 Click **Use this template** on GitHub. Then, in your copy:
 
-1. **Names.** Rename `chantilly` in `package.json`, and in `wrangler.jsonc` (Worker, D1 and R2 names, both top level and `previews`).
+1. **Names.** Rename `voidsite` in `package.json`, and in `wrangler.jsonc` (Worker, D1 and R2 names, both top level and `previews`).
 2. **Public origin.** Set `vars.EMDASH_SITE_URL` in `wrangler.jsonc` to the production URL. Emdash refuses production setup without it and derives the passkey's relying-party id from it, so with the placeholder value passkeys fail with a "Security error". CI's deploy job refuses to run while `example.com` is still there. The shared preview database also needs its own one-time setup wizard run, on a Preview that has a real origin.
 3. **Site details.** Edit `src/site.config.ts`: name, URL, legal entity, contact and privacy emails, jurisdiction, and the legal pages' review date. That file drives the footer and every legal page.
 4. **Cloudflare resources.** One-time, from the project directory:
    ```fish
    pnpm wrangler login
-   pnpm wrangler d1 create chantilly-preview        # copy its id into previews.d1_databases
-   pnpm wrangler r2 bucket create chantilly-media
-   pnpm wrangler r2 bucket create chantilly-media-preview
+   pnpm wrangler d1 create voidsite-preview        # copy its id into previews.d1_databases
+   pnpm wrangler r2 bucket create voidsite-media
+   pnpm wrangler r2 bucket create voidsite-media-preview
    ```
    Production D1 is created on the first deploy (the starter's behaviour); the preview database needs its id in `wrangler.jsonc` because previews don't inherit production settings.
 5. **Encryption key.** Emdash needs `EMDASH_ENCRYPTION_KEY` (it encrypts plugin secrets and checks it at startup). Generate one per environment with Emdash's own tool; never reuse or commit it:
@@ -72,5 +72,5 @@ Editors use `/_emdash/admin`. Content models live in `seed/seed.json`; `AGENTS.m
 
 ## Caveats
 
-- **Requires a PAID Cloudflare Workers plan.** The bundled Worker is about 16 MiB (4.1 MiB gzipped) with Emdash, over the free plan's 3 MiB gzip limit, so production needs Workers Paid. That is Emdash's own footprint, not something chantilly adds.
+- **Requires a PAID Cloudflare Workers plan.** The bundled Worker is about 16 MiB (4.1 MiB gzipped) with Emdash, over the free plan's 3 MiB gzip limit, so production needs Workers Paid. That is Emdash's own footprint, not something voidsite adds.
 - License exception - introduces GPL kudzu =  `@wordpress/block-serialization-default-parser` (GPL-2.0-or-later) comes in through Emdash's WordPress import and is allow-listed at an exact version in `scripts/check-licenses.ts`, with the reasoning. Revisit it if you ship the bundle to others.

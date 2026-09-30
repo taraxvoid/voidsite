@@ -1,6 +1,6 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
-    "name": "chantilly",
+    "name": "voidsite",
     "main": "./src/worker.ts",
     "compatibility_date": "2026-02-24",
     "compatibility_flags": ["nodejs_compat"],
@@ -10,13 +10,13 @@
     "d1_databases": [
         {
             "binding": "DB",
-            "database_name": "chantilly"
+            "database_name": "voidsite"
         }
     ],
     "r2_buckets": [
         {
             "binding": "MEDIA",
-            "bucket_name": "chantilly-media"
+            "bucket_name": "voidsite-media"
         }
     ],
     // Worker Previews (`wrangler preview`, needs Wrangler >= 4.135). Previews do
@@ -28,14 +28,14 @@
         "d1_databases": [
             {
                 "binding": "DB",
-                "database_name": "chantilly-preview",
+                "database_name": "voidsite-preview",
                 "database_id": "REPLACE-WITH-PREVIEW-D1-ID"
             }
         ],
         "r2_buckets": [
             {
                 "binding": "MEDIA",
-                "bucket_name": "chantilly-media-preview"
+                "bucket_name": "voidsite-media-preview"
             }
         ]
     },
