@@ -5,7 +5,7 @@ name: CI
 #
 # Local rather than calling voidflow's site-ci.yml, which assumes Bun. The
 # steps mirror it so this can move back onto voidflow once that is pnpm-aware
-# (see docs/voidflow-followups.md).
+# (see ravenflight/voidsite#4).
 
 on:
   pull_request:
