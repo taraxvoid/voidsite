@@ -18,6 +18,11 @@ published, measured and kept fast. Three deployment shapes:
    (`/blog/*`, `/omaha/*`) on a client domain whose other paths stay on the
    old host.
 
+In every shape, assume the client also runs third-party systems that
+voidsite does not replace: payments (Stripe is the common case), a store
+(Shopify and similar, or an ERP storefront such as Odoo), booking, reviews
+and CRM. voidsite links to, embeds or receives webhooks from them. See W6.
+
 ## 2. Decisions already made
 
 From the session and `rvnflt` plan v3 §0.2. Not up for re-litigation here.
@@ -48,13 +53,17 @@ From the session and `rvnflt` plan v3 §0.2. Not up for re-litigation here.
 - **Telephony** is its own spec. voidsite only shows numbers and emits the
   click events BUSINESS.MD names.
 - **Pilot.** One pilot client serves rvnflt M0, the first voidsite build and
-  the first real `bschool-interview`: Central Sign Supplies
-  (`centralsignsupplies.com`, see section 5). The consultancy's own site is
+  the first real `bschool-interview`: Heritage Law
+  (`planheritagelaw.com`, see section 5). The consultancy's own site is
   the dogfood deployment.
 - **Local-service model is the default seed** (decided 2026-09-30). No
   second seed.
-- **Section mode is deferred** until a client needs it (decided 2026-09-30,
-  but see the pilot note in section 5).
+- **Section mode is deferred** until a client needs it (decided
+  2026-09-30). A client whose store or app must stay on its current host is
+  that trigger.
+- **Third-party commerce is a first-class case** (decided 2026-09-30).
+  Stripe is assumed common, along with Shopify and similar. voidsite
+  integrates with them; it never becomes the cart.
 
 ## 3. Facts checked after the session
 
@@ -94,14 +103,37 @@ Ordered. "Needs" lists what blocks a workstream from starting.
 
 ### W1. Local-service content model and structured data
 
-- Collections: `services`, `locations`, `projects`, `faqs`, `people`, with
-  relations, all with `seo` support.
-- Routes: `/[service]`, `/[city]`, `/[city]/[service]`, project and FAQ
-  pages. Add each to `paths` in `a11y.spec.ts` and `site.spec.ts`.
-- JSON-LD: `LocalBusiness`, `Service` with `areaServed`, `FAQPage`,
-  `Person`, generated from fields. A unit-tested builder in `src/lib/`,
-  and a CI check that parses the emitted JSON-LD.
-- Publish gate: a service-in-city page is not published without unique
+Two layers, so the model survives clients that are not contractors (see
+the lessons in section 5).
+
+- **Entity collections:** `services` (with an optional parent, so
+  `/trusts/special-needs-trusts/` works), `locations`, `people`, `faqs`,
+  and `projects` (case studies; optional, many businesses have none or
+  cannot publish them).
+- **Editorial collections:** `guides` with a `kind` field (how-to, cost
+  guide, comparison, explainer, glossary entry), next to the existing
+  `posts`. Guides relate to services, and optionally to an external
+  product or category URL (W6). For a business that sells nationally or
+  online this layer is the whole content strategy.
+- **Service areas are optional and not only cities.** An area is a city,
+  county, state or region. Service-in-area pages are generated only where
+  the client has them; a firm serving "Nebraska and Iowa" gets two.
+- **Routes follow the collections' `urlPattern`, which is per-site
+  config.** A migrated site keeps its existing paths where they are sane;
+  a clean build gets the defaults (`/[service]`, `/[area]/[service]`,
+  `/guides/[slug]`). Add each to `paths` in `a11y.spec.ts` and
+  `site.spec.ts`.
+- **JSON-LD:** the `LocalBusiness` subtype comes from `profile.kind`
+  (`LegalService`, `Store`, `HomeAndConstructionBusiness` and so on), plus
+  `Service` with `areaServed`, `FAQPage`, `Person`, and `Article` or
+  `HowTo` for guides. voidsite never emits `Product` or `Offer` markup for
+  items sold on another system. A unit-tested builder in `src/lib/`, and a
+  CI check that parses the emitted JSON-LD.
+- **Vertical copy rules** as config, not code: a per-site disclaimer block
+  (attorney advertising, "not legal advice", "contacting us does not
+  create a client relationship") rendered on the pages and forms that need
+  it.
+- Publish gate: a service-in-area page is not published without unique
   content (a project, a local FAQ or written copy). A CI check flags
   near-duplicate sibling pages.
 - Per-entry noindex for ad landing and thank-you pages (SEO panel covers
@@ -114,6 +146,10 @@ Ordered. "Needs" lists what blocks a workstream from starting.
 
 - Event helpers in `src/lib/` that fire the BUSINESS.MD-named events from
   `tel:` links, CTAs, directions links and forms, each with `bschool_id`.
+- Outbound-conversion helper: a click through to a third-party checkout,
+  store or booking page is an event with the destination system as a
+  property. The completed order or booking is a `server` or `offsite` row
+  in BUSINESS.MD, not something the browser can see (W6).
 - Reverse proxy route for PostHog on a neutral path, in the Worker.
 - AI-referrer channel classification (chatgpt.com, perplexity.ai and so
   on) as an event property.
@@ -135,7 +171,12 @@ Ordered. "Needs" lists what blocks a workstream from starting.
   old URL is a single-hop 301 to a 200 whose canonical is itself; anything
   unmapped is an explicit 410.
 - A 30-day post-cutover watch of the Emdash 404 log.
-- Needs: nothing. Independent. Do it before the first migration client.
+- The inventory also lists every third-party embed, plugin and script on
+  the old site, each marked replace, keep or drop (W6). A migration that
+  silently loses the reviews widget or the booking link is a regression
+  the URL check cannot see.
+- Needs: nothing. Independent. The pilot is a WordPress migration, so this
+  comes before its cutover.
 
 ### W4. Section mode
 
@@ -155,17 +196,57 @@ Ordered. "Needs" lists what blocks a workstream from starting.
 - Needs: W2 for the event names. New vendor and stored personal data, so
   the privacy rule applies.
 
-### W6. Fleet operations
+### W6. Commerce and third-party integrations
+
+The client's payment, store, booking, review and CRM systems stay where
+they are. voidsite needs one way to declare and wire each.
+
+- **Integration registry.** Each integration is declared once per site
+  (extending `site.config.ts` and `src/lib/vendors.ts`): vendor, purpose,
+  how it appears (link, embed, webhook), the hosts it loads or calls,
+  whether it stores anything on the device, and whether it needs consent.
+  The sub-processor list, privacy copy, consent gating and
+  `legal.spec.ts` expectations derive from the registry, so the
+  privacy-matches-behavior rule holds without hand edits per vendor.
+- **Stripe, first-class.** Payment Links and hosted Checkout (no card
+  fields on voidsite, so PCI scope stays with Stripe). A Worker webhook
+  endpoint with signature verification writes `checkout.session.completed`
+  and similar to the lead ledger and emits the BUSINESS.MD `server` event
+  to PostHog. Covers deposits, consult fees, retainers, invoices and
+  simple product sales.
+- **Stores (Shopify and similar, Odoo).** The store owns the catalog, the
+  cart and `Product` markup. voidsite links into it (or embeds a buy
+  button) from guides and service pages, tags the outbound click, and
+  takes order webhooks where the platform offers them. With no webhook,
+  the order is an `offsite` row and reports say so.
+- **Cross-origin attribution.** Cookieless PostHog has no identity to
+  carry across domains. Pass a first-party reference on the outbound link
+  (Stripe `client_reference_id`, a UTM or cart attribute on stores) so the
+  webhook can name the landing page. Page-level, never person-level.
+- **Embeds** (booking, reviews, chat, maps): prefer a link or a
+  server-rendered snapshot over a third-party script. Reviews pulled
+  server-side and rendered as plain HTML avoid the script, the layout
+  shift and the consent question. Where a script is unavoidable it goes
+  through the registry and `src/lib/consent.ts`.
+- **Same-domain stores** need section mode (W4): the store keeps its
+  paths and voidsite serves the content paths. Otherwise the store lives
+  on its own host and voidsite links out.
+- Needs: W2 for event names, W5 for the ledger. The registry itself can
+  start with W2's PostHog proxy as its first entry.
+
+### W7. Fleet operations
 
 - In the `rvnflt` CLI: create the property, create D1, R2 and KV, set
   `EMDASH_SITE_URL`, fill placeholders, deploy a preview. Onboarding
-  checklist (GSC service account, GA4 viewer, GBP consistency).
+  checklist (GSC service account, GA4 viewer, GBP consistency), opening
+  with the intake questions from section 5: platform, how the business
+  takes money, where it sells, and what it already embeds.
 - Here: D1 backup to R2 with a tested restore, uptime and error alerts,
   template-update propagation (section 5).
 - Needs: the rvnflt CLI follow-on, and a propagation choice (section 5)
   before the second client.
 
-### W7. CI and voidflow convergence
+### W8. CI and voidflow convergence
 
 - #2: Unlighthouse performance and SEO checks.
 - #3: adopt the `@taraxvoid/voidflow` Playwright helper and Dependabot.
@@ -186,34 +267,77 @@ Ordered. "Needs" lists what blocks a workstream from starting.
 
 ## 5. Open items
 
-### Pilot fit: Central Sign Supplies
+### Pilot: Heritage Law
 
-Looked at on 2026-09-30. It is not the local-service shape the session
-designed around:
+`planheritagelaw.com`, looked at on 2026-09-30 from the public home page
+only. To confirm with Matt and the client before the W1 spec.
 
-- Wholesale sign-making supplies (vinyl, heat transfer, screen printing,
-  equipment) for sign shops, print shops, garment decorators and crafters.
-- One Omaha location (4222 D St) with local pickup, but it ships
-  nationwide. The primary conversion is the online cart, then phone.
-- The store runs on Odoo, not WordPress.
+- Estate planning firm: trusts, wills, powers of attorney, business
+  planning, farm estate planning, Medicaid planning, asset protection,
+  trust administration.
+- One Omaha office, serving Nebraska and Iowa. Owner John S. Diamantis,
+  plus at least one staff attorney.
+- WordPress. Nav: practice areas (Trusts, Estate Planning, Business
+  Planning, Medicaid, Farm Planning), attorney bio, about, blog, contact.
+  URLs are `/[category]/[service]/` with a trailing slash.
+- Conversions: phone and a contact form, with "no consultation fee"
+  messaging. No cart, booking widget or payment link seen.
+- Third parties seen: Trustindex (Google reviews widget) and an
+  accessibility toolbar plugin.
 
-What that changes, to confirm with Matt before the W1 spec:
+Why it fits: it is deployment shape 2 (WordPress migration, whole site),
+a local-service business, with lead conversions voidsite can observe. It
+exercises W1, W2, W3 and W5 and needs neither section mode nor a store.
 
-- **Deployment shape.** The cart stays on Odoo, so this is neither a clean
-  build nor a WordPress migration. voidsite would serve content next to
-  the store, which is section mode (deferred above) or a subdomain (the
-  weak-SEO fallback). Section mode also needs the zone on Cloudflare in
-  front of Odoo.
-- **Content model.** `/[city]/[service]` has little to offer a national
-  wholesaler. The pages that matter are buying guides, how-tos,
-  comparisons, brand and material explainers, and FAQs, linking into Odoo
-  product and category URLs. `locations`, `faqs` and `people` still apply;
-  `services` and `projects` mostly do not.
-- **Conversions.** The purchase happens on Odoo, outside voidsite's
-  PostHog project. voidsite sees outbound clicks to the store; BUSINESS.MD
-  0.4 would mark the order itself `source: offsite` or `server`.
-- **Structured data.** `Store` or `LocalBusiness` for the location, plus
-  `FAQPage` and `HowTo` or `Article`; `Product` markup belongs to Odoo.
+What it asks of the plan:
+
+- **Hierarchical services** and the existing `/[category]/[service]/`
+  paths and trailing-slash form kept as they are (W1, W3).
+- **Areas are states**, not cities (W1).
+- **`LegalService`** as the business type, `Person` for the attorneys.
+- **Regulated vertical.** Attorney advertising rules apply to
+  testimonials and claims, and the contact form needs a no-client-
+  relationship notice and must not invite confidential details (W1
+  disclaimer block, W5). Nothing here is legal advice; the firm reviews
+  its own copy.
+- **Reviews widget** is the first registry entry beyond analytics (W6):
+  replace the Trustindex script with a server-rendered snapshot or a link
+  to the Google profile.
+- **Accessibility toolbar** is dropped, not ported. voidsite's tested
+  markup replaces it, and the accessibility page stays limited to what
+  the suite checks.
+- **Stripe is not exercised** unless the firm wants to take flat fees or
+  retainers online. Worth asking, since W6 would otherwise get its first
+  real use on a later client.
+
+### Lessons from the first pilot candidate
+
+Central Sign Supplies (`centralsignsupplies.com`) was considered first
+and set aside: a wholesale sign-supplies store on Odoo with one Omaha
+location, shipping nationwide, converting through an online cart. It did
+not fit, and the ways it did not fit are now assumptions of this plan:
+
+1. **Check the business before the plan.** Platform, how it takes money,
+   where it sells and what it already embeds decide the deployment shape.
+   These are the first questions of onboarding (W7) and of the
+   `bschool-interview`, not discoveries made mid-build.
+2. **Content is not only service-in-city pages.** A business that sells
+   nationally or online is served by buying guides, how-tos, comparisons
+   and explainers. Hence the editorial layer in W1, and areas being
+   optional.
+3. **The cart is someone else's.** Stripe, Shopify, Odoo and the like
+   keep the transaction. voidsite links, embeds and listens. Hence W6.
+4. **The conversion often completes off-site.** The browser sees a click
+   out; the order arrives by webhook or not at all. BUSINESS.MD marks
+   those rows `server` or `offsite`, and reports state the coverage.
+5. **Structured data has an owner per type.** The store owns `Product`
+   and `Offer`; voidsite owns the organization, services, people, FAQs
+   and articles. Two systems describing the same product is worse than
+   one.
+6. **A store on the client's main domain forces section mode** or a
+   subdomain. That is the trigger that brings W4 forward.
+7. **WordPress is not a given.** The migration path and the URL inventory
+   (W3) must work from a sitemap and a crawl, not only a WXR export.
 
 ### Template update propagation (deferred)
 
