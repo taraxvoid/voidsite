@@ -27,6 +27,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     if: github.event.pull_request.draft != true
+    permissions:
+      contents: read
+      # gitleaks lists the PR's commits and comments on a finding; the paths
+      # filter lists the PR's files. Same grant as voidflow's site-ci.yml.
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
