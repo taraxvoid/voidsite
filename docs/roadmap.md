@@ -153,8 +153,24 @@ the lessons in section 5).
 - Reverse proxy route for PostHog on a neutral path, in the Worker.
 - AI-referrer channel classification (chatgpt.com, perplexity.ai and so
   on) as an event property.
-- `check:business` in CI once bschool M4 lands; `/BUSINESS` exposure next
-  to `llms.txt`.
+- `check:business` in CI once bschool M4 lands (`bschool validate` until
+  then).
+- `/BUSINESS` next to `llms.txt` serves the **public projection** of
+  BUSINESS.MD, not the file. The bschool spec defines it: entity facts and
+  conversion point definitions are public (visitors interact with them
+  anyway); hypotheses, owners, notes, grading and evidence are not.
+- **Sync to rvnflt** (rvnflt plan §8.1): on merge to main, CI uploads the
+  full file with `rvnflt insights upload --source business_md
+  --business-key <key>`, using a `ci`-scope `RVNFLT_TOKEN` secret. The key
+  comes from `bschool parse`, so the repo stores no rvnflt ids. The client
+  repo is the only place a hosted client's file is edited; Matt's tooling
+  proposes changes by PR.
+- `bschool:<id>` tokens in tests are in scope. MVP subset: the pilot's
+  browser conversions (phone click, contact form), with evidence pointers in
+  the file; enforcement (`bschool check`, BS050 and BS051) arrives with
+  bschool M2. Tokens for starter ids can live in template-owned tests;
+  client-specific ids go in a client-owned test file, so template merges do
+  not conflict.
 - Privacy: the proxy is a new first-party path to a vendor, so update
   `privacy.astro`, `site.config.ts` and `legal.spec.ts` in the same
   change.
@@ -241,6 +257,10 @@ they are. voidsite needs one way to declare and wire each.
   checklist (GSC service account, GA4 viewer, GBP consistency), opening
   with the intake questions from section 5: platform, how the business
   takes money, where it sells, and what it already embeds.
+- BUSINESS.MD handover: a client usually has a file in rvnflt before it has a
+  site (the pilot's `bschool-interview` comes first). Onboarding commits the
+  current import to the new repo as `BUSINESS.MD` and switches the rvnflt
+  property to the `site` origin (rvnflt plan §8.1).
 - Here: D1 backup to R2 with a tested restore, uptime and error alerts,
   template-update propagation (section 5).
 - Needs: the rvnflt CLI follow-on, and a propagation choice (section 5)
