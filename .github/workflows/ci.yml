@@ -29,8 +29,8 @@ jobs:
     if: github.event.pull_request.draft != true
     permissions:
       contents: read
-      # gitleaks lists the PR's commits and comments on a finding; the paths
-      # filter lists the PR's files. Same grant as voidflow's site-ci.yml.
+      # The paths filter lists the PR's files. Same grant as voidflow's
+      # site-ci.yml.
       pull-requests: write
 
     steps:
@@ -40,10 +40,22 @@ jobs:
           persist-credentials: false
 
       - name: Secrets scan
-        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+        # OSS gitleaks binary: the gitleaks-action wrapper needs a paid license
+        # for orgs. Same step as voidflow's site-ci.yml.
+        run: |
+          version=8.30.1
+          case "$(uname -m)" in
+            x86_64) arch=x64; sha=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb ;;
+            aarch64|arm64) arch=arm64; sha=e4a487ee7ccd7d3a7f7ec08657610aa3606637dab924210b3aee62570fb4b080 ;;
+            *) echo "unsupported arch $(uname -m)" >&2; exit 1 ;;
+          esac
+          tarball="gitleaks_${version}_linux_${arch}.tar.gz"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/$tarball" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${version}/${tarball}"
+          echo "${sha}  $RUNNER_TEMP/$tarball" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/$tarball" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" git --redact --no-banner --verbose .
+        shell: bash
 
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: changes
