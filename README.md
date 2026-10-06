@@ -1,25 +1,42 @@
 # voidsite
 
-**A content-site template where the privacy policy is a test, not a promise.**
+**A business site built to convert, live on Cloudflare in an afternoon.**
 
-[Emdash](https://github.com/emdash-cms/emdash) (an Astro CMS) on Cloudflare Workers. Editors work in a web admin, with no git. Developers get a paved road: CI, an isolated preview per PR, and the privacy and accessibility pages most sites forget, each checked against what the build actually does.
+A free, open-source starter that gives a small business a working site with real content structure on day one, laid out so customers and the AI agents shopping for them can find you, trust you and act. Content gets edited in a web admin: no git, no plugins to patch, no server to babysit.
 
-What makes it different:
+### Runs on Cloudflare
 
-- **Compliance as code.** E2E tests load the site as a visitor and as a signed-in editor, list every cookie and storage key, and fail if the privacy page doesn't name them. GPC counts as a decline. Nothing reaches Google before "Accept".
-- **Isolated previews.** Every PR deploys its own Worker Preview against a separate D1, R2 and KV, so a preview can never touch production data.
-- **Supply-chain gates.** gitleaks, a copyleft-license check, `pnpm audit`, a one-day `minimumReleaseAge` cooldown, Renovate, and a deploy gate that refuses while template placeholders remain.
-- **Claims only tests can back.** The accessibility page names no conformance level; axe runs on every public page in both color schemes.
+Workers, D1, R2 and KV. The same network behind DDoS protection for a big slice of the web serves your site from the edge. Nothing to patch, no box to keep up, and a small site usually fits the free tier.
 
-## What's in the box
+### Nothing broken ships
 
-Starts from Emdash's official Cloudflare `starter` template (D1, R2, `@astrojs/cloudflare`), plus:
+- Every pull request gets lint, type, unit, end-to-end and accessibility (axe) tests, plus its own live preview on **separate** data, so a preview can't touch production.
+- Production deploys only from `main`, only after the same checks, and gets smoke-tested once live.
+- Secret scanning, dependency audits, a one-day cooldown on brand-new package releases, and Renovate keep the supply chain boring.
 
-- **Legal pages**: privacy, accessibility, terms, and optional sub-processors and do-not-sell. The text follows the build's real configuration, and tests check that visitors get no cookies or storage before choosing and that the page names what the site uses.
-- **Light / dark / system theme**, native CSS (`color-scheme`, `light-dark()`), no flash, works without JS.
-- **Analytics with consent**: cookieless PostHog (no banner needed) and/or Google (GA4 or Tag Manager) behind a consent banner, denied by default. Nothing loads or is sent to Google before "Accept".
-- **CI** for lint, types, unit and e2e tests (axe in both themes), a production deploy, and a Worker Preview per PR with its own D1, R2 and KV.
-- `robots.txt` (Content-Signal; AI training refused unless you opt in), `llms.txt`, canonical links.
+### Agent-native
+
+`llms.txt`, `robots.txt` with Content-Signal (AI training opt-in, never assumed), canonical links, and structured data from Emdash. Agents get clean facts instead of guessing.
+
+### Measure what converts
+
+Cookieless PostHog out of the box, and Google Analytics or Tag Manager behind a consent banner when you want them.
+
+### And it's compliant
+
+Privacy, terms and accessibility pages are generated from one config file, and tests check them against what the site actually does: no cookies or storage before consent, Global Privacy Control honored, CCPA do-not-sell and sub-processor pages when you need them. Light and dark themes, no flash, works without JavaScript.
+
+### On the roadmap
+
+- Forms with Cloudflare Turnstile built in: contact, quote and signup, with no CAPTCHA headaches.
+- Stripe payment links and checkout.
+- One-click Deploy to Cloudflare.
+- WordPress migration that keeps every URL working (a redirect for every change).
+- Local-business structured data: `LocalBusiness`, `Service`, `FAQPage`.
+
+### Want it done for you?
+
+[Ravenflight](https://ravenflight.io) runs voidsite as a managed service: WordPress migration, setup, monitoring and updates.
 
 > The legal pages are a starting point, not legal advice. Review them with counsel before launch, and re-check them whenever the site starts collecting something new.
 
