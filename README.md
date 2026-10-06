@@ -16,7 +16,11 @@ Workers, D1, R2 and KV. The same network behind DDoS protection for a big slice 
 
 ### Agent-native
 
-`llms.txt`, `robots.txt` with Content-Signal (AI training opt-in, never assumed), canonical links, and structured data from Emdash. Agents get clean facts instead of guessing.
+AI assistants answer "who does X near me" from what their crawlers can read. voidsite keeps that path open, and its tests check it the way the [rvnflt](https://ravenflight.io) agent-legibility audit does:
+
+- Every AI search and assistant crawler (OAI-SearchBot, ChatGPT-User, Claude-SearchBot, PerplexityBot and more) is allowed. Only crawlers that collect training data are refused, and that's one setting to flip.
+- Pages are server-rendered, so agents read them without running JavaScript.
+- Nothing carries `noindex` or `nosnippet`, so pages stay eligible for AI answers.
 
 ### Measure what converts
 
@@ -28,11 +32,12 @@ Privacy, terms and accessibility pages are generated from one config file, and t
 
 ### On the roadmap
 
-- Forms with Cloudflare Turnstile built in: contact, quote and signup, with no CAPTCHA headaches.
-- Stripe payment links and checkout.
+- Structured data that describes the business (`LocalBusiness`, `Service`, `FAQPage`) and a home page built from it, the last piece of agent legibility.
+- Forms with Cloudflare Turnstile built in (contact, quote, signup), feeding a lead ledger in D1 with email and CRM hand-off. No CAPTCHA headaches.
+- Stripe Payment Links and hosted Checkout, with signed webhooks recording each payment against the page that sold it. Card details never touch the site.
+- An integration registry: declare a vendor once, and the privacy page, sub-processor list and consent gating follow.
 - One-click Deploy to Cloudflare.
 - WordPress migration that keeps every URL working (a redirect for every change).
-- Local-business structured data: `LocalBusiness`, `Service`, `FAQPage`.
 
 ### Want it done for you?
 
