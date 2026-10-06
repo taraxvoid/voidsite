@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { AI_TRAINING_BOTS, buildRobots } from '../../src/lib/robots'
+import {
+    AI_ANSWER_BOTS,
+    AI_TRAINING_BOTS,
+    buildRobots,
+} from '../../src/lib/robots'
 
 const origin = 'https://example.com'
 
@@ -43,5 +47,24 @@ describe('buildRobots', () => {
         expect(buildRobots({ origin, aiTraining: false })).toMatch(
             /User-agent: \*\n(?:.*\n)*?Allow: \//,
         )
+    })
+
+    // Answer engines cite a site only if their crawler can reach it; blocking
+    // even one makes the business invisible in that assistant. rvnflt's
+    // agent-legibility audit fails a site for this.
+    it('never blocks AI search or user-triggered crawlers', () => {
+        for (const aiTraining of [true, false]) {
+            const body = buildRobots({ origin, aiTraining })
+            for (const bot of AI_ANSWER_BOTS) {
+                expect(body).not.toContain(`User-agent: ${bot}`)
+            }
+        }
+    })
+
+    it('keeps the training and answer lists apart', () => {
+        const answer = new Set<string>(AI_ANSWER_BOTS)
+        for (const bot of AI_TRAINING_BOTS) {
+            expect(answer.has(bot)).toBe(false)
+        }
     })
 })

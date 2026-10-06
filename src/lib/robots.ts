@@ -8,14 +8,27 @@
 // Crawlers that collect content specifically to train models.
 export const AI_TRAINING_BOTS = [
     'GPTBot',
-    'CCBot',
-    'Google-Extended',
     'ClaudeBot',
-    'anthropic-ai',
+    'Google-Extended',
     'Applebot-Extended',
-    'Bytespider',
+    'Amazonbot',
     'Meta-ExternalAgent',
+    'CCBot',
+    'Bytespider',
+] as const
+
+// Crawlers that feed AI search answers or fetch a page when a person asks an
+// assistant about it. Never named in robots.txt, so they fall under the
+// wildcard Allow; blocking one hides the site from that assistant.
+export const AI_ANSWER_BOTS = [
+    'OAI-SearchBot',
+    'ChatGPT-User',
+    'Claude-SearchBot',
+    'Claude-User',
     'PerplexityBot',
+    'Perplexity-User',
+    'DuckAssistBot',
+    'Meta-ExternalFetcher',
 ] as const
 
 export function buildRobots({
