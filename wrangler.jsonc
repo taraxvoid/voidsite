@@ -1,0 +1,48 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "voidsite",
+    "main": "./src/worker.ts",
+    "compatibility_date": "2026-02-24",
+    "compatibility_flags": ["nodejs_compat"],
+    // Emdash refuses production setup without its public origin, and derives
+    // the passkey relying-party id from it. Set it to the production URL.
+    "vars": { "EMDASH_SITE_URL": "https://example.com" },
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "voidsite"
+        }
+    ],
+    "r2_buckets": [
+        {
+            "binding": "MEDIA",
+            "bucket_name": "voidsite-media"
+        }
+    ],
+    // Worker Previews (`wrangler preview`, needs Wrangler >= 4.135). Previews do
+    // not inherit production settings, so point them at separate resources: a PR
+    // preview must never write to production content. Create these once
+    // (see README) and replace the placeholder id. Cron triggers and routes
+    // stay top-level only; they do not apply to previews.
+    "previews": {
+        "d1_databases": [
+            {
+                "binding": "DB",
+                "database_name": "voidsite-preview",
+                "database_id": "REPLACE-WITH-PREVIEW-D1-ID"
+            }
+        ],
+        "r2_buckets": [
+            {
+                "binding": "MEDIA",
+                "bucket_name": "voidsite-media-preview"
+            }
+        ]
+    },
+    // Sandboxed plugins require Worker Loader, available on Workers paid plans. Uncomment to enable:
+    // "worker_loaders": [{ "binding": "LOADER" }],
+    // General maintenance cron trigger
+    "triggers": {
+        "crons": ["* * * * *"]
+    }
+}

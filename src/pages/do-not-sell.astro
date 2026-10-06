@@ -1,0 +1,40 @@
+---
+import Legal from '../layouts/Legal.astro'
+import { siteConfig } from '../site.config'
+
+// Optional page: enabled with siteConfig.legal.doNotSellPage. Only useful if
+// you actually sell or share personal information; adapt the copy to match.
+if (!siteConfig.legal.doNotSellPage) return Astro.rewrite('/404')
+---
+
+<Legal
+    title="Do not sell or share my personal information"
+    description="Opt-out information for California residents (CCPA/CPRA)."
+>
+    <p>
+        {siteConfig.entity} does not sell your personal information and does
+        not share it for cross-context behavioral advertising. If that ever
+        changes, we'll update this page first.
+    </p>
+    <p>
+        We honor the Global Privacy Control (GPC) signal as a valid opt-out.
+        <span data-gpc-status>
+            Your browser's GPC status is shown here when JavaScript is on.
+        </span>
+    </p>
+    <p>
+        To make a request under CCPA/CPRA, email
+        <a href={`mailto:${siteConfig.privacyEmail}`}
+            >{siteConfig.privacyEmail}</a
+        >
+        with "CCPA request" in the subject. We respond within 45 days.
+    </p>
+    <script>
+        const el = document.querySelector('[data-gpc-status]')
+        if (el)
+            el.textContent = (navigator as Navigator & { globalPrivacyControl?: boolean })
+                .globalPrivacyControl
+                ? 'Your browser is sending a GPC signal, and we are honoring it.'
+                : 'Your browser is not sending a GPC signal.'
+    </script>
+</Legal>

@@ -1,0 +1,27 @@
+---
+import Legal from '../layouts/Legal.astro'
+import { subProcessors } from '../lib/vendors'
+import { siteConfig } from '../site.config'
+
+// Optional page: enabled with siteConfig.legal.subProcessorsPage.
+if (!siteConfig.legal.subProcessorsPage) return Astro.rewrite('/404')
+---
+
+<Legal
+    title="Sub-processors"
+    description={`Vendors that process data on behalf of ${siteConfig.name}.`}
+>
+    <p>
+        {siteConfig.entity} uses these vendors to run {siteConfig.name}. Edit
+        the list in <code>src/site.config.ts</code> when it changes.
+    </p>
+    <ul>
+        {
+            subProcessors.map((p) => (
+                <li>
+                    <a href={p.url}>{p.name}</a>: {p.purpose}
+                </li>
+            ))
+        }
+    </ul>
+</Legal>

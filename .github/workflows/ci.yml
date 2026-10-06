@@ -1,0 +1,270 @@
+name: CI
+
+# Validate every change; deploy main to production and each PR to its own
+# Worker Preview (isolated D1/R2/KV, see the `previews` block in wrangler.jsonc).
+#
+# Local rather than calling voidflow's site-ci.yml, which assumes Bun. The
+# steps mirror it so this can move back onto voidflow once that is pnpm-aware.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    if: github.event.pull_request.draft != true
+    permissions:
+      contents: read
+      # The paths filter lists the PR's files. Same grant as voidflow's
+      # site-ci.yml.
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # gitleaks needs the full commit history
+          persist-credentials: false
+
+      - name: Secrets scan
+        # OSS gitleaks binary: the gitleaks-action wrapper needs a paid license
+        # for orgs. Same step as voidflow's site-ci.yml.
+        run: |
+          version=8.30.1
+          case "$(uname -m)" in
+            x86_64) arch=x64; sha=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb ;;
+            aarch64|arm64) arch=arm64; sha=e4a487ee7ccd7d3a7f7ec08657610aa3606637dab924210b3aee62570fb4b080 ;;
+            *) echo "unsupported arch $(uname -m)" >&2; exit 1 ;;
+          esac
+          tarball="gitleaks_${version}_linux_${arch}.tar.gz"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/$tarball" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${version}/${tarball}"
+          echo "${sha}  $RUNNER_TEMP/$tarball" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/$tarball" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" git --redact --no-banner --verbose .
+        shell: bash
+
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: changes
+        with:
+          filters: |
+            workflows:
+              - '.github/workflows/**'
+              - '.github/actions/**'
+
+      - uses: ./.github/actions/setup
+
+      - name: Lint CI workflows
+        if: steps.changes.outputs.workflows == 'true'
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/011a6d15e749bb3f2d771eed9c7aa0e7e3e10ee7/scripts/download-actionlint.bash \
+            | bash -s -- 1.7.12 "$RUNNER_TEMP"
+          "$RUNNER_TEMP/actionlint" -color
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Type check
+        run: pnpm run check
+
+      - name: Unit tests
+        run: pnpm run test:unit
+
+      - name: Check licenses
+        run: pnpm run check:licenses
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Builds with a fake Google tag id so the consent specs run, then tests.
+      - name: End-to-end tests
+        run: pnpm run test:e2e
+
+      # A second build with only a Tag Manager id, to cover that path too.
+      - name: End-to-end tests (Tag Manager build)
+        run: pnpm run test:e2e:gtm
+
+      # Runs Emdash's setup wizard with a virtual passkey and checks the
+      # cookies and storage a signed-in editor gets against the privacy page.
+      # Last, because it wipes the local D1 and patches the built config.
+      - name: End-to-end tests (signed-in editor)
+        run: pnpm run test:e2e:editor
+
+      - name: Upload failure reports
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-reports
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+
+  preview:
+    name: Preview
+    needs: validate
+    # Forks don't get repository secrets, so they can't deploy. The template
+    # repo itself has nothing to deploy either.
+    if: >-
+      github.event_name == 'pull_request'
+      && github.event.pull_request.draft != true
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && !github.event.repository.is_template
+      && vars.CLOUDFLARE_ACCOUNT_ID != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      - name: Build
+        run: pnpm run build
+        env:
+          GIT_SHA: ${{ github.sha }}
+          PUBLIC_POSTHOG_PROJECT_TOKEN: ${{ vars.PUBLIC_POSTHOG_PROJECT_TOKEN }}
+          PUBLIC_POSTHOG_HOST: ${{ vars.PUBLIC_POSTHOG_HOST }}
+          PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
+          PUBLIC_GTM_ID: ${{ vars.PUBLIC_GTM_ID }}
+
+      # `wrangler preview` (open beta) reads the previews block (separate
+      # D1/R2/KV), so a PR can't touch production content, and names the
+      # Preview after the branch. The build leaves a redirect at
+      # .wrangler/deploy/config.json, so no --config is needed.
+      - name: Deploy Preview
+        id: preview
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          PREVIEW_ENCRYPTION_KEY: ${{ secrets.PREVIEW_EMDASH_ENCRYPTION_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          secrets_file="$RUNNER_TEMP/preview-secrets.env"
+          (umask 077; printf 'EMDASH_ENCRYPTION_KEY=%s\n' "$PREVIEW_ENCRYPTION_KEY" > "$secrets_file")
+          pnpm exec wrangler preview --json \
+            --message "PR #$PR_NUMBER" --secrets-file "$secrets_file" \
+            | tee "$RUNNER_TEMP/preview.json"
+          rm -f "$secrets_file"
+          # The JSON shape isn't documented yet: take the first https URL.
+          url=$(jq -r '[.. | strings | select(test("^https://"))] | first // empty' "$RUNNER_TEMP/preview.json")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Comment Preview URL
+        if: steps.preview.outputs.url != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PREVIEW_URL: ${{ steps.preview.outputs.url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh pr comment "$PR_NUMBER" --create-if-none --edit-last \
+            --body "Preview: $PREVIEW_URL (isolated D1/R2/KV, not production)"
+
+      # Same smoke tests as production; consent specs skip themselves.
+      - name: Install Playwright
+        if: steps.preview.outputs.url != ''
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Smoke tests
+        if: steps.preview.outputs.url != ''
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.url }}
+        run: pnpm exec playwright test test/e2e/site.spec.ts test/e2e/legal.spec.ts test/e2e/a11y.spec.ts
+
+      - name: Upload failure reports
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: preview-reports
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+
+  deploy:
+    name: Deploy
+    needs: validate
+    # Skipped on the template repo itself (it can never pass the placeholder
+    # check) and until Cloudflare is configured (variable
+    # CLOUDFLARE_ACCOUNT_ID), so a fresh copy isn't red on day one.
+    if: >-
+      github.event_name == 'push'
+      && github.ref == 'refs/heads/main'
+      && !github.event.repository.is_template
+      && vars.CLOUDFLARE_ACCOUNT_ID != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: prod
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      # Production must not ship the template's example.com / "your
+      # jurisdiction" text or the placeholder preview D1 id.
+      - name: Check template placeholders are replaced
+        run: pnpm run check:placeholders
+
+      - name: Build
+        run: pnpm run build
+        env:
+          GIT_SHA: ${{ github.sha }}
+          PUBLIC_POSTHOG_PROJECT_TOKEN: ${{ vars.PUBLIC_POSTHOG_PROJECT_TOKEN }}
+          PUBLIC_POSTHOG_HOST: ${{ vars.PUBLIC_POSTHOG_HOST }}
+          PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
+          PUBLIC_GTM_ID: ${{ vars.PUBLIC_GTM_ID }}
+
+      - name: Deploy
+        id: deploy
+        uses: taraxvoid/voidflow/actions/cloudflare-deploy@v0.5.1
+        with:
+          env: prod
+          command: deploy
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Smoke-test the live site (the consent specs skip themselves: they need
+      # a build with a Google tag id in the test process).
+      - name: Smoke tests
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: pnpm exec playwright test test/e2e/site.spec.ts test/e2e/legal.spec.ts test/e2e/a11y.spec.ts
+
+      - name: Upload failure reports
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: smoke-reports
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore

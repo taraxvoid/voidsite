@@ -1,0 +1,32 @@
+---
+import { googleEnabled } from '../lib/analytics'
+import { siteConfig } from '../site.config'
+
+const links = [
+    { href: '/privacy', label: 'Privacy' },
+    { href: '/terms', label: 'Terms' },
+    { href: '/accessibility', label: 'Accessibility' },
+    ...(siteConfig.legal.subProcessorsPage
+        ? [{ href: '/sub-processors', label: 'Sub-processors' }]
+        : []),
+    ...(siteConfig.legal.doNotSellPage
+        ? [{ href: '/do-not-sell', label: 'Do not sell or share' }]
+        : []),
+]
+---
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <span>&copy; {new Date().getFullYear()} {siteConfig.entity}</span>
+        <nav aria-label="Legal">
+            {links.map((l) => <a href={l.href}>{l.label}</a>)}
+        </nav>
+        {
+            googleEnabled && (
+                <button type="button" class="link-button" data-consent-reopen>
+                    Cookie settings
+                </button>
+            )
+        }
+    </div>
+</footer>

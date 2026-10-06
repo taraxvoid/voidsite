@@ -1,0 +1,72 @@
+---
+const options = [
+    { value: 'system', label: 'System' },
+    { value: 'light', label: 'Light' },
+    { value: 'dark', label: 'Dark' },
+]
+---
+
+{/* Hidden until the script runs: without JS a dead control would be worse
+    than none, and the site already follows the browser preference. */}
+<fieldset class="theme-toggle" data-theme-toggle hidden>
+    <legend>Color theme</legend>
+    {
+        options.map((o) => (
+            <label>
+                <input type="radio" name="theme" value={o.value} />
+                {o.label}
+            </label>
+        ))
+    }
+</fieldset>
+
+<script>
+    import {
+        applyPreference,
+        parsePreference,
+        readStoredPreference,
+        themeColorFor,
+        writeStoredPreference,
+    } from "../lib/theme";
+    import type { ResolvedTheme, ThemePreference } from "../lib/theme";
+
+    function safeStorage(): Storage | null {
+        try {
+            return window.localStorage;
+        } catch {
+            return null;
+        }
+    }
+
+    function syncThemeColor(preference: ThemePreference) {
+        for (const meta of document.querySelectorAll<HTMLMetaElement>(
+            'meta[name="theme-color"]',
+        )) {
+            meta.content = themeColorFor(
+                preference,
+                meta.dataset.scheme as ResolvedTheme,
+            );
+        }
+    }
+
+    const toggle = document.querySelector<HTMLFieldSetElement>(
+        "[data-theme-toggle]",
+    );
+    if (toggle) {
+        const inputs = [
+            ...toggle.querySelectorAll<HTMLInputElement>('input[name="theme"]'),
+        ];
+        const current = readStoredPreference(safeStorage());
+        for (const input of inputs) input.checked = input.value === current;
+        toggle.hidden = false;
+
+        toggle.addEventListener("change", (event) => {
+            const preference = parsePreference(
+                (event.target as HTMLInputElement).value,
+            );
+            applyPreference(document.documentElement, preference);
+            writeStoredPreference(safeStorage(), preference);
+            syncThemeColor(preference);
+        });
+    }
+</script>
