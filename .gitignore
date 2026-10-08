@@ -16,3 +16,6 @@ data.db
 # Test output
 test-results
 playwright-report
+
+# Local plans and design notes; the public docs live on the docs site
+docs/
