@@ -4,7 +4,7 @@ Guidance for Claude Code in this repo. See README.md for setup and deployment.
 
 ## Stack
 
-Astro 7 + Emdash (CMS, SSR) on Cloudflare Workers, D1, R2, KV. **pnpm**, not Bun (Cloudflare and Emdash expect pnpm; this overrides the global Bun default). Node and pnpm are pinned in the `volta` block of package.json. If a bare `pnpm` fails with "requires at least Node.js v22.13", Volta's global pnpm shim is bound to an old Node; run `volta run --node 24.18.0 pnpm <args>` or `volta install pnpm@11`.
+Astro 7 + Emdash (CMS, SSR) on Cloudflare Workers, D1, R2, KV. **pnpm**, not Bun (Cloudflare and Emdash expect pnpm; this overrides the global Bun default). pnpm is pinned by `packageManager` and Node by `devEngines.runtime` in package.json; pnpm downloads that Node and runs scripts with it, so run tools through `pnpm run` / `pnpm exec` rather than a global install.
 
 ## Commands
 
