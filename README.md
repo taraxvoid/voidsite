@@ -89,7 +89,7 @@ pnpm run test:push     # what the pre-push hook runs
 pnpm run check:licenses
 ```
 
-Requires the Node and pnpm versions in `package.json` (`volta` block); with Volta they are picked up automatically.
+pnpm is pinned by `packageManager` and Node by `devEngines.runtime` in `package.json`; pnpm downloads that Node and uses it for `pnpm` scripts. Tools run outside pnpm (an editor's language server, a global `wrangler`) still use the Node on your `PATH`.
 
 ## How it deploys
 
