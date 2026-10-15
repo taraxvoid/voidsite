@@ -22,7 +22,7 @@
         "test:e2e:a11y": "playwright test test/e2e/a11y.spec.ts",
         "check:licenses": "node scripts/check-licenses.ts",
         "audit": "pnpm audit --audit-level high",
-        "prepare": "husky",
+        "prepare": "lefthook install || echo 'lefthook not installed (run mise install); git hooks skipped'",
         "lint:actions": "sh scripts/lint-actions.sh",
         "test:push": "pnpm run lint && pnpm run check && pnpm run test:unit && pnpm run test:e2e",
         "build:e2e": "PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123 astro build",
@@ -47,7 +47,6 @@
         "@cloudflare/workers-types": "^5.20260820.1",
         "@lizenz/checker": "^0.0.2",
         "@playwright/test": "^1.63.0",
-        "husky": "^9.1.7",
         "vitest": "^5.0.2",
         "wrangler": "^4.142.0"
     },
