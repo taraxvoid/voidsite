@@ -3,26 +3,26 @@ git diff --cached --quiet && exit 0
 
 # dependencies must be installed, otherwise the CLI binaries won't be on PATH
 if [ ! -d node_modules ]; then
-  echo "pre-commit: 'node_modules' is missing. Run 'pnpm install', then commit again."
+  echo "pre-commit: 'node_modules' is missing. Run 'aube install', then commit again."
   exit 1
 fi
 
-pnpm run format || exit 1
+aube run format || exit 1
 
 git diff --cached --name-only --diff-filter=d | while IFS= read -r file; do
   git add -- "$file" || exit 1
 done || exit 1
 
-pnpm run lint:actions || exit 1
-pnpm run check || exit 1
-pnpm run test:unit || exit 1
+aube run lint:actions || exit 1
+aube run check || exit 1
+aube run test:unit || exit 1
 
 if git diff --cached --name-only | grep -qE '(^|/)(package\.json|pnpm-lock\.yaml|check-licenses\.ts)$'; then
-  pnpm run check:licenses || exit 1
+  aube run check:licenses || exit 1
 fi
 
 # local-only (not CI): hits a remote vulnerability database, so it can hang
 # offline. Only relevant when dependencies changed; fails closed.
 if git diff --cached --name-only | grep -qE '(^|/)(package\.json|pnpm-lock\.yaml)$'; then
-  pnpm run audit || exit 1
+  aube run audit || exit 1
 fi

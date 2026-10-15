@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test'
 
-// Needs a build with only PUBLIC_GTM_ID set: `pnpm run test:e2e:gtm`.
+// Needs a build with only PUBLIC_GTM_ID set: `aube run test:e2e:gtm`.
 const GTM_ID = process.env.PUBLIC_GTM_ID
 test.skip(!GTM_ID, 'needs a build with PUBLIC_GTM_ID')
 

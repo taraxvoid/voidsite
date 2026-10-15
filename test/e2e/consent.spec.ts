@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test'
 
-// These need a build with a Google tag configured. `pnpm run test:e2e`
+// These need a build with a Google tag configured. `aube run test:e2e`
 // builds with a fake id; a run against a deployed site skips them.
 const GA_ID = process.env.PUBLIC_GA_MEASUREMENT_ID
 test.skip(!GA_ID, 'needs a build with PUBLIC_GA_MEASUREMENT_ID')

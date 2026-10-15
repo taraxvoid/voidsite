@@ -1,8 +1,8 @@
 #!/bin/sh
 
 if [ ! -d node_modules ]; then
-  echo "pre-push: 'node_modules' is missing. Run 'pnpm install', then push again."
+  echo "pre-push: 'node_modules' is missing. Run 'aube install', then push again."
   exit 1
 fi
 
-pnpm run test:push
+aube run test:push

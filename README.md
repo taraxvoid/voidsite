@@ -54,42 +54,42 @@ Click **Use this template** on GitHub. Then, in your copy:
 3. **Site details.** Edit `src/site.config.ts`: name, URL, legal entity, contact and privacy emails, jurisdiction, and the legal pages' review date. That file drives the footer and every legal page.
 4. **Cloudflare resources.** One-time, from the project directory:
    ```fish
-   pnpm wrangler login
-   pnpm wrangler d1 create voidsite-preview        # copy its id into previews.d1_databases
-   pnpm wrangler r2 bucket create voidsite-media
-   pnpm wrangler r2 bucket create voidsite-media-preview
+   aube exec wrangler login
+   aube exec wrangler d1 create voidsite-preview        # copy its id into previews.d1_databases
+   aube exec wrangler r2 bucket create voidsite-media
+   aube exec wrangler r2 bucket create voidsite-media-preview
    ```
    Production D1 is created on the first deploy (the starter's behaviour); the preview database needs its id in `wrangler.jsonc` because previews don't inherit production settings.
 5. **Encryption key.** Emdash needs `EMDASH_ENCRYPTION_KEY` (it encrypts plugin secrets and checks it at startup). Generate one per environment with Emdash's own tool; never reuse or commit it:
    ```fish
-   pnpm exec emdash secrets generate --write .env   # local dev (.env is gitignored)
-   pnpm exec emdash secrets generate                # prints a key; then:
-   pnpm wrangler secret put EMDASH_ENCRYPTION_KEY   # production, paste the key
+   aube exec emdash secrets generate --write .env      # local dev (.env is gitignored)
+   aube exec emdash secrets generate                   # prints a key; then:
+   aube exec wrangler secret put EMDASH_ENCRYPTION_KEY # production, paste the key
    ```
    Use a different key for the `PREVIEW_EMDASH_ENCRYPTION_KEY` GitHub secret (step 6).
 6. **GitHub.** Add the repository secret `CLOUDFLARE_API_TOKEN` (Workers, D1, R2 edit) and the variable `CLOUDFLARE_ACCOUNT_ID`. Add a second key as secret `PREVIEW_EMDASH_ENCRYPTION_KEY` for previews. Create an environment named `prod` (add required reviewers if you want a gate).
 7. **Analytics (optional).** Set repository *variables*: `PUBLIC_POSTHOG_PROJECT_TOKEN` (and `PUBLIC_POSTHOG_HOST`), and/or `PUBLIC_GA_MEASUREMENT_ID` (`G-…`) or `PUBLIC_GTM_ID` (`GTM-…`). If both a GA4 id and a GTM id are set, GTM wins, because GA4 normally lives inside the container. The banner, footer "Cookie settings" link, privacy wording and sub-processor list appear automatically when a Google tag is set. In Google Analytics keep Google signals and ad personalization off, and if you use GTM, make sure every tag respects Consent Mode.
-8. **Dependency scanning.** Install the [Socket](https://socket.dev/blog/introducing-pnpm-support) GitHub App on the repository; it analyses `pnpm-lock.yaml`. (Socket documents no local scanner for pnpm, unlike Bun's.) `pnpm-workspace.yaml` already holds new releases back for a day (`minimumReleaseAge`).
-9. **First run.** `pnpm install`, `pnpm dev`, open `/_emdash/admin`, and finish the setup wizard (this creates the first admin passkey and seeds demo content). Invite editors from the admin.
+8. **Dependency scanning.** Install the [Socket](https://socket.dev/blog/introducing-pnpm-support) GitHub App on the repository; it analyses `pnpm-lock.yaml`. (Socket documents no local scanner for pnpm lockfiles, unlike Bun's.) `pnpm-workspace.yaml` (read by aube) already holds new releases back for a day (`minimumReleaseAge`).
+9. **First run.** `aube install`, `aube run dev`, open `/_emdash/admin`, and finish the setup wizard (this creates the first admin passkey and seeds demo content). Invite editors from the admin.
 10. **Site title.** In the setup wizard, use the same site title as `name` in `site.config.ts`: the page `<title>`, JSON-LD and social tags come from Emdash's settings, while the legal copy uses `site.config.ts`.
-11. **Cookies and storage.** `pnpm run test:e2e:editor` signs in with a virtual passkey and checks that an editor gets exactly `astro-session` and `__em_d1_bookmark` (session, HttpOnly) plus the `emdash-editor` and `emdash-toolbar-labels` storage keys, that the privacy page names them, and that visitors get nothing. Two entries on the privacy page can't be exercised that way and come from Emdash's source: `emdash_oauth_csrf` (only during external-provider sign-in) and `emdash-toolbar-dismissed` (only after dismissing the toolbar). Re-run this after upgrading Emdash.
+11. **Cookies and storage.** `aube run test:e2e:editor` signs in with a virtual passkey and checks that an editor gets exactly `astro-session` and `__em_d1_bookmark` (session, HttpOnly) plus the `emdash-editor` and `emdash-toolbar-labels` storage keys, that the privacy page names them, and that visitors get nothing. Two entries on the privacy page can't be exercised that way and come from Emdash's source: `emdash_oauth_csrf` (only during external-provider sign-in) and `emdash-toolbar-dismissed` (only after dismissing the toolbar). Re-run this after upgrading Emdash.
 
 ## Everyday commands
 
 ```fish
-pnpm dev               # http://localhost:4321, admin at /_emdash/admin
-pnpm run lint          # Biome
-pnpm run check         # astro check (types)
-pnpm run test:unit     # Vitest
-pnpm run test:e2e      # builds with a fake GA id, then Playwright (mobile + desktop, axe)
-pnpm run test:e2e:editor  # wizard + virtual passkey + signed-in cookie/storage check (wipes local D1)
-pnpm run test:e2e:gtm  # builds with only a Tag Manager id, runs the consent specs for that path
-pnpm run check:placeholders  # fails while example.com / "your jurisdiction" / REPLACE-WITH remain (CI's deploy runs it)
-pnpm run test:push     # what the pre-push hook runs
-pnpm run check:licenses
+aube run dev                # http://localhost:4321, admin at /_emdash/admin
+aube run lint               # Biome
+aube run check              # astro check (types)
+aube run test:unit          # Vitest
+aube run test:e2e           # builds with a fake GA id, then Playwright (mobile + desktop, axe)
+aube run test:e2e:editor    # wizard + virtual passkey + signed-in cookie/storage check (wipes local D1)
+aube run test:e2e:gtm       # builds with only a Tag Manager id, runs the consent specs for that path
+aube run check:placeholders # fails while example.com / "your jurisdiction" / REPLACE-WITH remain (CI's deploy runs it)
+aube run test:push          # what the pre-push hook runs
+aube run check:licenses
 ```
 
-pnpm is pinned by `packageManager` and Node by `devEngines.runtime` in `package.json`; pnpm downloads that Node and uses it for `pnpm` scripts. Tools run outside pnpm (an editor's language server, a global `wrangler`) still use the Node on your `PATH`.
+The package manager is [aube](https://aube.sh/). `mise.toml` installs it (or `mise use -g aube`), `packageManager` in `package.json` pins the exact version, and Node is pinned by `devEngines.runtime`; aube resolves that Node (installing it through mise) and uses it for `aube run` scripts. Tools run outside aube (an editor's language server, a global `wrangler`) still use the Node on your `PATH`. aube reads and writes `pnpm-lock.yaml` and `pnpm-workspace.yaml` in place, and locally links `node_modules` into its global virtual store, so worktrees share package trees. `aube store prune` drops entries no project uses any more.
 
 ## How it deploys
 

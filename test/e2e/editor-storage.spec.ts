@@ -9,11 +9,11 @@ async function advance(step: () => Promise<void>, next: Locator) {
     }).toPass({ timeout: 90_000 })
 }
 
-// Opt-in: `pnpm run test:e2e:editor`. Completes Emdash's setup wizard on a
+// Opt-in: `aube run test:e2e:editor`. Completes Emdash's setup wizard on a
 // fresh local D1 with a virtual passkey, signs in, and checks the cookies and
 // localStorage keys against what the privacy page tells editors and visitors.
 // The wizard only runs once per database, so the script wipes .wrangler/state.
-test.skip(!process.env.EDITOR_E2E, 'run with `pnpm run test:e2e:editor`')
+test.skip(!process.env.EDITOR_E2E, 'run with `aube run test:e2e:editor`')
 
 test('editor sign-in sets exactly what the privacy page lists; visitors get nothing', async ({
     page,
