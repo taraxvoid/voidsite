@@ -1,0 +1,6 @@
+[tools]
+# Git hooks (lefthook.yml); the hook set itself comes from voidflow.
+lefthook = "2.2.1"
+# Used by lint:actions (actionlint runs shellcheck on workflow scripts).
+actionlint = "1.7.12"
+shellcheck = "0.11.0"
