@@ -1,7 +1,7 @@
 /**
  * Fail on strong-copyleft licenses in the dependency tree.
  *
- * Usage: pnpm run check:licenses
+ * Usage: aube run check:licenses
  */
 import { spawnSync } from 'node:child_process'
 import { dirname } from 'node:path'
@@ -49,7 +49,7 @@ const EXCLUDE = ['@wordpress/block-serialization-default-parser@5.56.0'].join(
 )
 
 const result = spawnSync(
-    'pnpm',
+    'aube',
     [
         'exec',
         'license-checker',

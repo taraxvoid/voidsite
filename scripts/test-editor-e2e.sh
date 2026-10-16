@@ -8,8 +8,8 @@ PORT=4243
 CONFIG=dist/server/wrangler.json
 rm -rf .wrangler/state
 trap 'rm -rf .wrangler/state' EXIT
-pnpm run build
+aube run build
 jq --arg url "http://localhost:$PORT" '.vars.EMDASH_SITE_URL = $url' "$CONFIG" > "$CONFIG.tmp"
 mv "$CONFIG.tmp" "$CONFIG"
 EDITOR_E2E=1 PLAYWRIGHT_TEST_PORT="$PORT" \
-    pnpm exec playwright test test/e2e/editor-storage.spec.ts --project=desktop-chrome "$@"
+    aube exec playwright test test/e2e/editor-storage.spec.ts --project=desktop-chrome "$@"

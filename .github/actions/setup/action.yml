@@ -1,13 +1,24 @@
 name: Setup
-description: Install pnpm, Node and dependencies (repo must already be checked out)
+description: Install aube, Node and dependencies (repo must already be checked out)
 
 runs:
   using: composite
   steps:
-    # No version inputs: pnpm/setup reads pnpm from `packageManager` and Node
-    # from `devEngines.runtime` in package.json, then runs `pnpm install`, so
-    # CI can't drift from local development.
-    - uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
+    # No version inputs: mise installs aube from mise.toml, aube re-execs the
+    # version in `packageManager` and resolves Node from `devEngines.runtime`
+    # in package.json (installing it through mise), so CI can't drift from
+    # local development. cache_save_post keeps that Node in the mise cache.
+    - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
       with:
-        cache: true
-        require-lockfile: true
+        cache_save_post: true
+
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.local/share/aube/store
+        key: ${{ runner.os }}-aube-store-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-aube-store-
+
+    # Frozen lockfile: fails if pnpm-lock.yaml is out of date with package.json.
+    - run: aube ci
+      shell: bash

@@ -1,6 +1,12 @@
 [tools]
+# Package manager. `packageManager` in package.json pins the exact version
+# (aube re-execs it); this only bootstraps aube, so keep the two in step.
+# Node comes from devEngines.runtime (aube resolves it, mise downloads it).
+aube = "2.7.0"
+# Used by the pre-commit hook (scripts/lint-actions.sh). jactionlint matches
+# the version CI downloads; shellcheck is what jactionlint runs on `run:` steps.
+jactionlint = "2.1.0"
 # Git hooks (lefthook.yml); the hook set itself comes from voidflow.
 lefthook = "2.2.1"
 # Used by lint:actions (actionlint runs shellcheck on workflow scripts).
-actionlint = "1.7.12"
 shellcheck = "0.11.0"

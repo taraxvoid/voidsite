@@ -34,7 +34,7 @@ export default defineConfig({
     webServer: process.env.PLAYWRIGHT_BASE_URL
         ? undefined
         : {
-              command: `pnpm run preview --port ${PORT}`,
+              command: `aube run preview --port ${PORT}`,
               url: baseURL,
               reuseExistingServer: !process.env.CI,
               timeout: 60_000,

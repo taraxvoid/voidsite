@@ -4,21 +4,21 @@ Guidance for Claude Code in this repo. See README.md for setup and deployment.
 
 ## Stack
 
-Astro 7 + Emdash (CMS, SSR) on Cloudflare Workers, D1, R2, KV. **pnpm**, not Bun (Cloudflare and Emdash expect pnpm; this overrides the global Bun default). pnpm is pinned by `packageManager` and Node by `devEngines.runtime` in package.json; pnpm downloads that Node and runs scripts with it, so run tools through `pnpm run` / `pnpm exec` rather than a global install.
+Astro 7 + Emdash (CMS, SSR) on Cloudflare Workers, D1, R2, KV. **aube**, not Bun or pnpm (this overrides the global Bun default). aube keeps pnpm's files: `pnpm-lock.yaml` and `pnpm-workspace.yaml` (build allowlist, release cooldown, overrides) are still the source of truth, so don't add an `aube-lock.yaml`. aube is pinned by `packageManager` (bootstrapped by `mise.toml`, keep the two in step) and Node by `devEngines.runtime` in package.json; aube resolves that Node and runs scripts with it, so run tools through `aube run` / `aube exec` rather than a global install. Locally, `node_modules` links into aube's global virtual store (`~/.cache/aube`), so worktrees share package trees instead of each holding a full copy.
 
 ## Commands
 
 ```fish
-pnpm dev                 # dev server; admin at /_emdash/admin
-pnpm run lint            # biome check (format + lint); `pnpm run format` fixes
-pnpm run check           # astro check
-pnpm run test:unit       # vitest: test/unit and test/pages
-pnpm run test:e2e        # builds with PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123, then playwright
-pnpm run test:e2e:editor # signed-in editor: wizard + virtual passkey, verifies cookies/storage vs the privacy page
-pnpm run test:e2e:gtm    # same consent specs against a Tag-Manager-only build
-pnpm run check:placeholders  # deploy gate: template placeholders must be replaced
-pnpm run check:licenses  # fails on GPL/AGPL etc.; one reviewed exception, see the script
-pnpm run test:push       # lint + check + unit + e2e (pre-push hook)
+aube run dev                # dev server; admin at /_emdash/admin
+aube run lint               # biome check (format + lint); `aube run format` fixes
+aube run check              # astro check
+aube run test:unit          # vitest: test/unit and test/pages
+aube run test:e2e           # builds with PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123, then playwright
+aube run test:e2e:editor    # signed-in editor: wizard + virtual passkey, verifies cookies/storage vs the privacy page
+aube run test:e2e:gtm       # same consent specs against a Tag-Manager-only build
+aube run check:placeholders # deploy gate: template placeholders must be replaced
+aube run check:licenses     # fails on GPL/AGPL etc.; one reviewed exception, see the script
+aube run test:push          # lint + check + unit + e2e (pre-push hook)
 ```
 
 Hooks (lefthook, shared from voidflow's `lefthook/site.yml`; install the binary with `mise install`): pre-commit formats and re-stages, then runs jactionlint, `check`, `test:unit`, and (when `package.json`, the lockfile or `scripts/check-licenses.ts` changes) licenses and `pnpm audit`. Pre-push runs `test:push`. Never bypass with `--no-verify`; fix the cause.

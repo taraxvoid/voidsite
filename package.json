@@ -18,17 +18,17 @@
         "lint": "biome check .",
         "format": "biome check --write .",
         "test:unit": "vitest run",
-        "test:e2e": "pnpm run build:e2e && PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123 playwright test",
+        "test:e2e": "aube run build:e2e && PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123 playwright test",
         "test:e2e:a11y": "playwright test test/e2e/a11y.spec.ts",
         "check:licenses": "node scripts/check-licenses.ts",
         "audit": "pnpm audit --audit-level high",
         "prepare": "lefthook install || echo 'lefthook not installed (run mise install); git hooks skipped'",
         "lint:actions": "sh scripts/lint-actions.sh",
-        "test:push": "pnpm run lint && pnpm run check && pnpm run test:unit && pnpm run test:e2e",
+        "test:push": "aube run lint && aube run check && aube run test:unit && aube run test:e2e",
         "build:e2e": "PUBLIC_GA_MEASUREMENT_ID=G-E2ETEST123 astro build",
         "check:placeholders": "node scripts/check-placeholders.ts",
         "build:e2e:gtm": "PUBLIC_GTM_ID=GTM-E2ETEST123 astro build",
-        "test:e2e:gtm": "pnpm run build:e2e:gtm && PUBLIC_GTM_ID=GTM-E2ETEST123 playwright test test/e2e/consent-gtm.spec.ts test/e2e/legal.spec.ts",
+        "test:e2e:gtm": "aube run build:e2e:gtm && PUBLIC_GTM_ID=GTM-E2ETEST123 playwright test test/e2e/consent-gtm.spec.ts test/e2e/legal.spec.ts",
         "test:e2e:editor": "sh scripts/test-editor-e2e.sh"
     },
     "dependencies": {
@@ -50,7 +50,7 @@
         "vitest": "^5.0.2",
         "wrangler": "^4.142.0"
     },
-    "packageManager": "pnpm@11.9.0+sha512.bd682d5d03fe525ef7c9fd6780c6884d1e756ac4c9c9fe00c538782824310dcf90e3ddc4f53835f06dfaebd5085e41855e0bcbb3b60de2ac5bbab89e5036f03b",
+    "packageManager": "aube@2.7.0",
     "devEngines": {
         "runtime": {
             "name": "node",
