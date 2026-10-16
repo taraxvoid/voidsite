@@ -1,0 +1,18 @@
+# Shared hooks live in voidflow (pre-commit, commit-msg hint, pre-push); they
+# run pnpm because this repo has a pnpm-lock.yaml. Pin to a release tag;
+# Renovate bumps it. This file can add commands but not override the shared
+# ones; differences go through package.json scripts.
+remotes:
+  - git_url: https://github.com/taraxvoid/voidflow
+    ref: v0.13.0
+    configs:
+      - lefthook/site.yml
+
+pre-commit:
+  commands:
+    # The shared licenses step only watches package.json and lockfiles; the
+    # reviewed exception lives in the check script, so rerun when it changes.
+    licenses-script:
+      priority: 3
+      glob: "scripts/check-licenses.ts"
+      run: pnpm run check:licenses

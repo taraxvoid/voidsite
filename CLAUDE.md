@@ -21,7 +21,7 @@ aube run check:licenses     # fails on GPL/AGPL etc.; one reviewed exception, se
 aube run test:push          # lint + check + unit + e2e (pre-push hook)
 ```
 
-Hooks (husky): pre-commit formats and re-stages, then runs jactionlint, `check`, `test:unit`, and (when the lockfile changes) licenses and `aube audit`. Never bypass with `--no-verify`; fix the cause.
+Hooks (lefthook, shared from voidflow's `lefthook/site.yml`; install the binary with `mise install`): pre-commit formats and re-stages, then runs jactionlint, `check`, `test:unit`, and (when `package.json`, the lockfile or `scripts/check-licenses.ts` changes) licenses and `pnpm audit`. Pre-push runs `test:push`. Never bypass with `--no-verify`; fix the cause.
 
 ## Layout
 
