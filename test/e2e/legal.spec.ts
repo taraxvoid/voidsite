@@ -55,10 +55,13 @@ test('optional pages exist exactly when site.config enables them', async ({
 
 test('the contact endpoint is off unless the form is enabled', async ({
     request,
+    baseURL,
 }) => {
     test.skip(siteConfig.contact.enabled, 'contact form enabled')
+    // Same-origin, so Astro's origin check doesn't answer first.
     const res = await request.post('/api/contact', {
         form: { message: 'hi', email: 'a@b.co' },
+        headers: { origin: new URL(baseURL as string).origin },
     })
     expect(res.status()).toBe(404)
 })
