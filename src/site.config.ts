@@ -34,6 +34,43 @@ export const siteConfig = {
         /** Show the sub-processors page. Useful once you use several vendors. */
         subProcessorsPage: false,
     },
+    /**
+     * Who the business is, for search engines and AI agents (JSON-LD on every
+     * page). `type` is a schema.org type: Organization, LocalBusiness or a
+     * subtype such as ProfessionalService, MusicSchool or Restaurant. Empty
+     * fields are left out of the markup.
+     */
+    business: {
+        type: 'Organization',
+        logo: '',
+        telephone: '',
+        /** Leave every field empty for a business without a public address. */
+        address: {
+            streetAddress: '',
+            addressLocality: '',
+            addressRegion: '',
+            postalCode: '',
+            addressCountry: '',
+        },
+        /** City or region served, e.g. 'Omaha, NE'. */
+        areaServed: '',
+        /** Profiles elsewhere: social accounts, GitHub, directories. */
+        sameAs: [] as string[],
+        /** What the business sells, as schema.org Services. */
+        services: [] as { name: string; description: string }[],
+    },
+    /**
+     * Contact form (/contact): Turnstile bot check, one message per visitor
+     * per hour, delivered by Resend. Off by default. Enabling it adds
+     * Turnstile and Resend to the privacy and sub-processor pages; set the
+     * Worker secrets TURNSTILE_SECRET and RESEND_API_KEY and the CONTACT_*
+     * and TURNSTILE_HOSTNAMES vars in wrangler.jsonc first.
+     */
+    contact: {
+        enabled: false,
+        /** Public Turnstile site key; the secret is a Worker secret. */
+        turnstileSiteKey: '',
+    },
     /** Vendors that process visitor data on the site's behalf. */
     subProcessors: [
         {

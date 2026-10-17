@@ -1,0 +1,31 @@
+---
+import ContactForm from '../components/ContactForm.astro'
+import Base from '../layouts/Base.astro'
+import { siteConfig } from '../site.config'
+
+// Optional page: enabled with siteConfig.contact.enabled.
+if (!siteConfig.contact.enabled) return Astro.rewrite('/404')
+
+const canonical = new URL(Astro.url.pathname, Astro.url.origin).href
+---
+
+<Base
+    title="Contact"
+    description={`Contact ${siteConfig.name}.`}
+    canonical={canonical}
+>
+    <div style="max-width: var(--measure)">
+        <h1>Contact</h1>
+        <p>
+            Email us at{' '}
+            <a href={`mailto:${siteConfig.contactEmail}`}
+                >{siteConfig.contactEmail}</a
+            >, or send a message below.
+        </p>
+        <ContactForm />
+        <p class="muted">
+            Messages go to our inbox and nowhere else. The form uses Cloudflare
+            Turnstile to keep bots out; see <a href="/privacy">Privacy</a>.
+        </p>
+    </div>
+</Base>

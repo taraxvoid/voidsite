@@ -181,6 +181,31 @@ const host = siteConfig.subProcessors[0]?.name ?? 'our hosting provider'
         browser asks for a page, and may keep short-term operational logs to
         keep the site running and secure.
     </p>
+    {
+        siteConfig.contact.enabled && (
+            <>
+                <h2>Contact form</h2>
+                <p>
+                    The contact page loads Cloudflare Turnstile from{' '}
+                    <code>challenges.cloudflare.com</code> to check that a
+                    person, not a bot, is sending the form. It runs only on that
+                    page and only with JavaScript on. To do that check,
+                    Cloudflare receives your IP address and signals about your
+                    browser; see{' '}
+                    <a href="https://www.cloudflare.com/turnstile-privacy-policy/"
+                        >Cloudflare's Turnstile privacy addendum</a
+                    >.
+                </p>
+                <p>
+                    When you send the form, your message, your email address and
+                    your name (if you give one) are emailed to us through Resend,
+                    an email delivery service. To limit abuse, the site keeps a
+                    one-way hash of your IP address for one hour, which can't be
+                    turned back into the address.
+                </p>
+            </>
+        )
+    }
 
     <h2>Editors and signed-in users</h2>
     <p>
@@ -194,6 +219,15 @@ const host = siteConfig.subProcessors[0]?.name ?? 'our hosting provider'
     <ul>
         <li>Cookies: only as long as described above.</li>
         <li>Local storage: until you clear it in your browser.</li>
+        {
+            siteConfig.contact.enabled && (
+                <li>
+                    Contact messages: in our inbox until no longer needed, or
+                    until you ask us to delete them. The hashed IP address: one
+                    hour.
+                </li>
+            )
+        }
         {
             googleEnabled && (
                 <li>
