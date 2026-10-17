@@ -48,7 +48,9 @@ describe('rateLimitKey', () => {
     test('is stable per IP and never contains the address', async () => {
         const a = await rateLimitKey('https://example.com', '203.0.113.7')
         expect(a).toBe(await rateLimitKey('https://example.com', '203.0.113.7'))
-        expect(a).not.toBe(await rateLimitKey('https://example.com', '203.0.113.8'))
+        expect(a).not.toBe(
+            await rateLimitKey('https://example.com', '203.0.113.8'),
+        )
         expect(a).not.toContain('203.0.113.7')
         expect(a).toMatch(/^contact:[0-9a-f]{64}$/)
     })

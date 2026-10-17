@@ -25,8 +25,15 @@ interface Props {
     jsonLd?: unknown[]
 }
 
-const { title, pageTitle, description, image, canonical, content, jsonLd = [] } =
-    Astro.props
+const {
+    title,
+    pageTitle,
+    description,
+    image,
+    canonical,
+    content,
+    jsonLd = [],
+} = Astro.props
 const structuredData = [businessSchema(siteConfig), ...jsonLd.filter(Boolean)]
 const [settingsResult, menuResult] = await Promise.all([
     getSiteSettingsWithCacheHint(),
