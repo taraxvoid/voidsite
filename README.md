@@ -56,7 +56,7 @@ pnpm run test:push     # what the pre-push hook runs
 pnpm run check:licenses
 ```
 
-Requires the Node and pnpm versions in `package.json` (`volta` block); with Volta they are picked up automatically.
+Requires the Node and pnpm versions in `mise.toml`; with [mise](https://mise.jdx.dev/) installed they are picked up automatically (`mise install`).
 
 ## How it deploys
 
