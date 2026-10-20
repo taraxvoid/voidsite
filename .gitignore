@@ -19,3 +19,16 @@ playwright-report
 
 # Local plans and design notes; the public docs live on the docs site
 docs/
+
+# Editor / bots
+.poolside/
+.clawness/
+.kilo/
+.claude/
+.delta/
+.cursor
+.vscode/
+.idea
+.superpowers
+docs/superpowers
+.playwright-mcp
