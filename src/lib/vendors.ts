@@ -8,6 +8,20 @@ import { googleEnabled, posthogEnabled } from './analytics'
  */
 export const subProcessors = [
     ...siteConfig.subProcessors,
+    ...(siteConfig.contact.enabled
+        ? [
+              {
+                  name: 'Cloudflare Turnstile',
+                  purpose: 'Bot check on the contact form (contact page only)',
+                  url: 'https://www.cloudflare.com/turnstile-privacy-policy/',
+              },
+              {
+                  name: 'Resend',
+                  purpose: 'Delivers contact-form messages to our inbox',
+                  url: 'https://resend.com/legal/privacy-policy',
+              },
+          ]
+        : []),
     ...(posthogEnabled
         ? [
               {

@@ -22,6 +22,11 @@ AI assistants answer "who does X near me" from what their crawlers can read. voi
 - Pages are server-rendered, so agents read them without running JavaScript.
 - Nothing carries `noindex` or `nosnippet`, so pages stay eligible for AI answers.
 
+### Described to agents, reachable by people
+
+- Every page carries JSON-LD for the business (`Organization`, `LocalBusiness` or a subtype, with its services, area and profiles), built from `business` in `src/site.config.ts`; empty fields are left out. Pages can add more, e.g. `faqSchema()`.
+- An optional contact form (`contact.enabled`): Cloudflare Turnstile, one message per visitor per hour, delivery by Resend, and nothing sent from previews. Turning it on adds Turnstile and Resend to the privacy and sub-processor pages.
+
 ### Measure what converts
 
 Cookieless PostHog out of the box, and Google Analytics or Tag Manager behind a consent banner when you want them.
@@ -32,8 +37,8 @@ Privacy, terms and accessibility pages are generated from one config file, and t
 
 ### On the roadmap
 
-- Structured data that describes the business (`LocalBusiness`, `Service`, `FAQPage`) and a home page built from it, the last piece of agent legibility.
-- Forms with Cloudflare Turnstile built in (contact, quote, signup), feeding a lead ledger in D1 with email and CRM hand-off. No CAPTCHA headaches.
+- A home page built from the business's structured data (the JSON-LD itself ships: see below).
+- Quote and signup forms on the contact form's Turnstile plumbing, feeding a lead ledger in D1 with CRM hand-off.
 - Stripe Payment Links and hosted Checkout, with signed webhooks recording each payment against the page that sold it. Card details never touch the site.
 - An integration registry: declare a vendor once, and the privacy page, sub-processor list and consent gating follow.
 - One-click Deploy to Cloudflare.

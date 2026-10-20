@@ -3,8 +3,13 @@
 // Runtime types generated with workerd@1.20260205.0 2026-02-24 nodejs_compat
 declare namespace Cloudflare {
 	interface Env {
+		RATE_LIMIT: KVNamespace;
 		MEDIA: R2Bucket;
 		DB: D1Database;
+		EMDASH_SITE_URL: string;
+		TURNSTILE_HOSTNAMES: string;
+		CONTACT_FROM: string;
+		CONTACT_TO: string;
 	}
 }
 interface Env extends Cloudflare.Env {}

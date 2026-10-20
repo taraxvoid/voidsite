@@ -4,10 +4,10 @@ import { AI_ANSWER_BOTS } from '../../src/lib/robots'
 // Dogfoods rvnflt's agent-legibility audit (isAgentLegible in
 // ravenflight/rvnflt packages/schemas/src/audit.ts): AI search crawlers can
 // reach the site, pages read without JavaScript, and nothing opts out of
-// AI answers. Its fourth criterion, JSON-LD that describes the business
-// (LocalBusiness and friends), isn't built yet, so it isn't asserted here.
-// Nor is the home page's text: with no content it is a "No posts yet" list,
-// which an agent can't learn the business from. Both arrive with the
+// AI answers, and every page carries JSON-LD describing the business
+// (src/lib/structured-data.ts, from siteConfig.business). The home page's
+// text isn't asserted: with no content it is a "No posts yet" list, which
+// an agent can't learn the business from; that arrives with the
 // local-service content model.
 
 // Every public page; add new ones as they are created.
@@ -52,3 +52,18 @@ test.describe('without JavaScript', () => {
         })
     }
 })
+
+for (const path of paths) {
+    test(`${path} describes the business in JSON-LD`, async ({ request }) => {
+        const html = await (await request.get(path)).text()
+        const blocks = [
+            ...html.matchAll(
+                /<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g,
+            ),
+        ].map((m) => JSON.parse(m[1] as string))
+        const business = blocks.find((b) => b['@id']?.endsWith('/#business'))
+        expect(business?.['@context']).toBe('https://schema.org')
+        expect(business?.name).toBeTruthy()
+        expect(business?.url).toBeTruthy()
+    })
+}

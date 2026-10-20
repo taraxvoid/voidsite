@@ -26,9 +26,9 @@ Hooks (lefthook, shared from voidflow's `lefthook/site.yml`; install the binary 
 ## Layout
 
 - `src/site.config.ts`: the one per-site config (entity, emails, legal flags, AI-crawler policy). Legal pages and footer read it.
-- `src/lib/`: pure, unit-tested logic (`theme`, `consent`, `google-tag`, `robots`) plus `analytics.ts` (what this build enables, from `PUBLIC_*` env) and the browser loader `google-loader.ts`.
+- `src/lib/`: pure, unit-tested logic (`theme`, `consent`, `google-tag`, `robots`, `structured-data`, `contact`, `turnstile`) plus `analytics.ts` (what this build enables, from `PUBLIC_*` env) and the browser loader `google-loader.ts`.
 - `src/layouts/Base.astro` is the starter's layout with Emdash wiring; keep edits small so upstream diffs stay easy. `Legal.astro` wraps legal pages.
-- `src/pages/`: the starter's routes plus `privacy`, `terms`, `accessibility`, optional `sub-processors` and `do-not-sell` (404 unless enabled in `site.config.ts`), `robots.txt.ts` (overrides Emdash's), `llms.txt.ts`. Emdash serves `/sitemap.xml` itself; don't add `@astrojs/sitemap`.
+- `src/pages/`: the starter's routes plus `privacy`, `terms`, `accessibility`, optional `sub-processors`, `do-not-sell` and `contact` + `api/contact` (404 unless enabled in `site.config.ts`), `robots.txt.ts` (overrides Emdash's), `llms.txt.ts`. Emdash serves `/sitemap.xml` itself; don't add `@astrojs/sitemap`.
 - `wrangler.jsonc`: production, plus a `previews` block with separate D1/R2 so PR previews never touch production data. The build writes `.wrangler/deploy/config.json` pointing at `dist/server/wrangler.json`, so plain `wrangler deploy` and `wrangler preview` work.
 
 ## Rules that matter
