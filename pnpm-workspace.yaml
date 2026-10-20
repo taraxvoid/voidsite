@@ -15,6 +15,10 @@ minimumReleaseAgeExclude:
   - "@emdash-cms/*"
   - undici@7.29.1
 blockExoticSubdeps: true
+# Reviewed 2026-10-20: 3.0.3 is a manual backport (canary tag) by a portabletext
+# maintainer, no provenance; 2.0.18/3.0.1 and latest carry attestations.
+trustPolicyExclude:
+  - "@portabletext/toolkit@3.0.3"
 overrides:
   undici@>=7.0.0 <7.29.1: ^7.29.1
   undici@>=7.1.0 <7.29.1: ^7.29.1
