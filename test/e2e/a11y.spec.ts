@@ -1,8 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test } from '@playwright/test'
-
-// Add every public page here as it is created.
-const paths = ['/', '/privacy', '/terms', '/accessibility']
+import { expect, paths, test } from './fixtures'
 
 // Full default rule set (WCAG A/AA plus best practices), like queeromaha.
 
