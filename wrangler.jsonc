@@ -4,6 +4,7 @@
     "main": "./src/worker.ts",
     "compatibility_date": "2026-02-24",
     "compatibility_flags": ["nodejs_compat"],
+    "preview_urls": true,
     // Emdash refuses production setup without its public origin, and derives
     // the passkey relying-party id from it. Set it to the production URL.
     "vars": {
@@ -35,7 +36,19 @@
     // (see README) and replace the placeholder id. Cron triggers and routes
     // stay top-level only; they do not apply to previews.
     "previews": {
-        "kv_namespaces": [{ "binding": "RATE_LIMIT" }],
+        // Previews don't auto-provision KV. Create both once (see README) and
+        // replace the placeholder ids. SESSION is the Astro adapter's session
+        // store; production gets it provisioned on deploy.
+        "kv_namespaces": [
+            {
+                "binding": "SESSION",
+                "id": "REPLACE-WITH-PREVIEW-SESSION-KV-ID"
+            },
+            {
+                "binding": "RATE_LIMIT",
+                "id": "REPLACE-WITH-PREVIEW-RATE-LIMIT-KV-ID"
+            }
+        ],
         // No Turnstile hostnames: the contact form refuses to send from
         // previews.
         "vars": {
