@@ -50,8 +50,8 @@ const { siteTitle, siteTagline, siteLogo } = resolveStarterSiteIdentity(
 const titleIncludesSiteName =
     title === siteTitle ||
     title.endsWith(` | ${siteTitle}`) ||
-    title.endsWith(` — ${siteTitle}`)
-const fullTitle = titleIncludesSiteName ? title : `${title} — ${siteTitle}`
+    title.endsWith(` - ${siteTitle}`)
+const fullTitle = titleIncludesSiteName ? title : `${title} - ${siteTitle}`
 const pageDescription = description ?? siteTagline
 const menu = menuResult.data
 
