@@ -111,6 +111,18 @@ test('privacy copy mentions the contact form exactly when it is on', async ({
     )
 })
 
+test('privacy copy says Turnstile runs wherever a signup form appears', async ({
+    page,
+}) => {
+    test.skip(!siteConfig.newsletter.enabled, 'newsletter disabled')
+    await page.goto('/privacy')
+    const text = await page.locator('main').innerText()
+    expect(text).toContain(
+        'Pages with a newsletter signup form load Cloudflare Turnstile',
+    )
+    expect(text).not.toContain('The subscribe page loads')
+})
+
 test('privacy copy names Cloudflare as the only mail service', async ({
     page,
 }) => {
