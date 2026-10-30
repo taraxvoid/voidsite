@@ -42,10 +42,26 @@ test.describe('with JavaScript', () => {
                 'One email when something new goes up. Unsubscribe any time.',
             ),
         ).toBeVisible()
-        await expect(page.getByLabel('Your email')).toHaveCount(3)
+        // Only the three fixture CTAs: #pt-sample adds one when enabled.
+        await expect(
+            page.locator('#first, #second, #linked').getByLabel('Your email'),
+        ).toHaveCount(3)
         await expect(
             page.locator('#first').getByRole('button', { name: 'Subscribe' }),
         ).toBeVisible()
+    })
+
+    test('the field and button share a row', async ({ page }) => {
+        await page.goto(FIXTURE)
+        const field = await page.locator('#first-email').boundingBox()
+        const button = await page
+            .locator('#first')
+            .getByRole('button')
+            .boundingBox()
+        if (!field || !button) throw new Error('CTA not laid out')
+        const middle = (box: { y: number; height: number }) =>
+            box.y + box.height / 2
+        expect(Math.abs(middle(field) - middle(button))).toBeLessThan(4)
     })
 
     test('two CTAs submit and report independently', async ({ page }) => {
@@ -119,6 +135,10 @@ test.describe('a saved editor block', () => {
         const sample = page.locator('#pt-sample')
         await expect(sample.getByText('Before the block.')).toBeVisible()
         await expect(sample.locator('[data-newsletter-cta]')).toHaveCount(0)
+        // Rendered by the plugin (as nothing), not as an unknown type.
+        await expect(sample.locator('[data-portabletext-unknown]')).toHaveCount(
+            0,
+        )
     })
 
     test('renders the CTA while the newsletter is on', async ({ page }) => {
