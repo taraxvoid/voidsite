@@ -20,8 +20,12 @@ const TURNSTILE_SRC =
 
 const w = () => window as Window & { turnstile?: TurnstileApi }
 
-export const loadTurnstile = () =>
-    new Promise<TurnstileApi>((resolve, reject) => {
+// Several forms can share a page; they share one script load. A failed load
+// is forgotten so the next call can retry.
+let pending: Promise<TurnstileApi> | undefined
+
+export const loadTurnstile = () => {
+    pending ??= new Promise<TurnstileApi>((resolve, reject) => {
         const loaded = w().turnstile
         if (loaded) return resolve(loaded)
         const script = document.createElement('script')
@@ -36,7 +40,12 @@ export const loadTurnstile = () =>
             reject(new Error('turnstile failed to load')),
         )
         document.head.appendChild(script)
+    }).catch((error: unknown) => {
+        pending = undefined
+        throw error
     })
+    return pending
+}
 
 /** Turnstile tokens are single-use: reset after every submission. */
 export const resetTurnstile = (widgetId: string | undefined) => {
