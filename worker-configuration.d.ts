@@ -6,10 +6,9 @@ declare namespace Cloudflare {
 		RATE_LIMIT: KVNamespace;
 		MEDIA: R2Bucket;
 		DB: D1Database;
+		EMAIL: SendEmail;
 		EMDASH_SITE_URL: string;
 		TURNSTILE_HOSTNAMES: string;
-		CONTACT_FROM: string;
-		CONTACT_TO: string;
 	}
 }
 interface Env extends Cloudflare.Env {}

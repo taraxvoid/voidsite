@@ -16,6 +16,12 @@ export const siteConfig = {
     /** Privacy requests. */
     privacyEmail: 'privacy@example.com',
     /**
+     * Sender for all mail the site sends (Emdash sign-in links and invites,
+     * contact-form messages), through Cloudflare Email Sending. Its domain
+     * must be onboarded there first or Cloudflare rejects the message.
+     */
+    mailFrom: 'site@example.com',
+    /**
      * Optional place to report accessibility problems in public (an issue
      * tracker, say). Leave empty to use the contact email only.
      */
@@ -61,10 +67,10 @@ export const siteConfig = {
     },
     /**
      * Contact form (/contact): Turnstile bot check, one message per visitor
-     * per hour, delivered by Resend. Off by default. Enabling it adds
-     * Turnstile and Resend to the privacy and sub-processor pages; set the
-     * Worker secrets TURNSTILE_SECRET and RESEND_API_KEY and the CONTACT_*
-     * and TURNSTILE_HOSTNAMES vars in wrangler.jsonc first.
+     * per hour, emailed from `mailFrom` to `contactEmail`. Off by default.
+     * Enabling it adds Turnstile to the privacy and sub-processor pages; set
+     * the Worker secret TURNSTILE_SECRET and the TURNSTILE_HOSTNAMES var in
+     * wrangler.jsonc first.
      */
     contact: {
         enabled: false,
@@ -75,7 +81,7 @@ export const siteConfig = {
     subProcessors: [
         {
             name: 'Cloudflare',
-            purpose: 'Hosting, CDN, database and file storage',
+            purpose: 'Hosting, CDN, database, file storage and email delivery',
             url: 'https://www.cloudflare.com/privacypolicy/',
         },
     ],

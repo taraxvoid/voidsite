@@ -198,8 +198,9 @@ const host = siteConfig.subProcessors[0]?.name ?? 'our hosting provider'
                 </p>
                 <p>
                     When you send the form, your message, your email address and
-                    your name (if you give one) are emailed to us through Resend,
-                    an email delivery service. To limit abuse, the site keeps a
+                    your name (if you give one) are emailed to us through
+                    Cloudflare Email Sending, from the same host that serves the
+                    site. To limit abuse, the site keeps a
                     one-way hash of your IP address for one hour, which can't be
                     turned back into the address.
                 </p>
@@ -212,7 +213,9 @@ const host = siteConfig.subProcessors[0]?.name ?? 'our hosting provider'
         If you're given an editor account, we store your name, email address,
         role and the public part of your passkey (or other sign-in method) in
         the site's database. Your fingerprint or face data never leaves your
-        device. Content you write is stored with the site's content.
+        device. Content you write is stored with the site's content. Sign-in
+        links and invitations are emailed to you through Cloudflare Email
+        Sending.
     </p>
 
     <h2>Data retention</h2>

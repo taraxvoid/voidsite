@@ -15,11 +15,6 @@ export const subProcessors = [
                   purpose: 'Bot check on the contact form (contact page only)',
                   url: 'https://www.cloudflare.com/turnstile-privacy-policy/',
               },
-              {
-                  name: 'Resend',
-                  purpose: 'Delivers contact-form messages to our inbox',
-                  url: 'https://resend.com/legal/privacy-policy',
-              },
           ]
         : []),
     ...(posthogEnabled

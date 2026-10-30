@@ -25,7 +25,7 @@ AI assistants answer "who does X near me" from what their crawlers can read. voi
 ### Described to agents, reachable by people
 
 - Every page carries JSON-LD for the business (`Organization`, `LocalBusiness` or a subtype, with its services, area and profiles), built from `business` in `src/site.config.ts`; empty fields are left out. Pages can add more, e.g. `faqSchema()`.
-- An optional contact form (`contact.enabled`): Cloudflare Turnstile, one message per visitor per hour, delivery by Resend, and nothing sent from previews. Turning it on adds Turnstile and Resend to the privacy and sub-processor pages.
+- An optional contact form (`contact.enabled`): Cloudflare Turnstile, one message per visitor per hour, delivery by Cloudflare Email Sending, and nothing sent from previews. Turning it on adds Turnstile to the privacy and sub-processor pages.
 
 ### Measure what converts
 
@@ -65,6 +65,8 @@ Click **Use this template** on GitHub. Then, in your copy:
    aube exec wrangler r2 bucket create voidsite-media-preview
    ```
    Production D1 is created on the first deploy (the starter's behaviour); the preview database needs its id in `wrangler.jsonc` because previews don't inherit production settings.
+
+   For mail (Emdash sign-in links and invites, the contact form), onboard the domain of `mailFrom` in `site.config.ts` with Cloudflare Email Sending in the dashboard. Until it is accepted, Cloudflare rejects every message; the `EMAIL` binding in `wrangler.jsonc` needs no other setup or API key.
 5. **Encryption key.** Emdash needs `EMDASH_ENCRYPTION_KEY` (it encrypts plugin secrets and checks it at startup). Generate one per environment with Emdash's own tool; never reuse or commit it:
    ```fish
    aube exec emdash secrets generate --write .env      # local dev (.env is gitignored)

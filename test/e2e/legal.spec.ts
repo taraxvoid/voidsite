@@ -73,11 +73,20 @@ test('privacy copy mentions the contact form exactly when it is on', async ({
     const text = await page.locator('main').innerText()
     if (siteConfig.contact.enabled) {
         expect(text).toContain('Turnstile')
-        expect(text).toContain('Resend')
+        expect(text).toContain('Contact form')
     } else {
         expect(text).not.toContain('Turnstile')
-        expect(text).not.toContain('Resend')
+        expect(text).not.toContain('Contact form')
     }
+})
+
+test('privacy copy names Cloudflare as the only mail service', async ({
+    page,
+}) => {
+    await page.goto('/privacy')
+    const text = await page.locator('main').innerText()
+    expect(text).toContain('Cloudflare Email Sending')
+    expect(text).not.toContain('Resend')
 })
 
 test('the accessibility page claims no conformance level', async ({ page }) => {
