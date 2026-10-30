@@ -454,3 +454,34 @@ main,
 .form-status[hidden] {
     display: none;
 }
+
+/* Newsletter CTA: field and button share a row, wrapping when narrow. */
+.form--inline {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: end;
+    gap: 0.5rem;
+    max-width: none;
+}
+
+.form--inline .form-field {
+    flex: 1 1 14rem;
+}
+
+.form--inline [data-turnstile],
+.form--inline .form-status {
+    flex-basis: 100%;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
