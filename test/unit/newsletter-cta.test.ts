@@ -23,9 +23,7 @@ describe('ctaContent', () => {
     })
 
     test('trims and folds line breaks into one line', () => {
-        expect(ctaContent({ heading: '  A\n\nB  ' }, true)?.heading).toBe(
-            'A B',
-        )
+        expect(ctaContent({ heading: '  A\n\nB  ' }, true)?.heading).toBe('A B')
     })
 
     test('returns null when the newsletter is off', () => {
