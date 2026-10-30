@@ -318,7 +318,7 @@ main,
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: end;
+    align-items: center;
     gap: 0.5rem;
     max-width: none;
 }
@@ -327,9 +327,11 @@ main,
     flex: 1 1 14rem;
 }
 
+/* Full-width rows go after the field and button, whatever the DOM order. */
 .form--inline [data-turnstile],
 .form--inline .form-status {
     flex-basis: 100%;
+    order: 1;
 }
 
 .visually-hidden {
