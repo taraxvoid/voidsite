@@ -1,0 +1,79 @@
+---
+import { providers } from '../lib/newsletter'
+import { ctaContent } from '../lib/newsletter-cta'
+import { siteConfig } from '../site.config'
+import NewsletterForm from './NewsletterForm.astro'
+
+interface Props {
+    heading?: string
+    copy?: string
+    button?: string
+    /** Must be unique on the page; a random one is used when omitted. */
+    id?: string
+    /** Defaults to siteConfig.newsletter.enabled; off renders nothing. */
+    enabled?: boolean
+    /** The provider's page, the no-JS way to subscribe. */
+    publicUrl?: string
+}
+
+const {
+    heading,
+    copy,
+    button,
+    id = `newsletter-${crypto.randomUUID().slice(0, 8)}`,
+    enabled = siteConfig.newsletter.enabled,
+    publicUrl = siteConfig.newsletter.publicUrl,
+} = Astro.props
+const content = ctaContent({ heading, copy, button }, enabled)
+const provider = providers[siteConfig.newsletter.provider]
+---
+
+{
+    content && (
+        <section
+            class="newsletter-cta"
+            aria-labelledby={`${id}-heading`}
+            data-newsletter-cta
+            hidden={!publicUrl}
+        >
+            <h2 id={`${id}-heading`}>{content.heading}</h2>
+            <p class="copy">{content.copy}</p>
+            <NewsletterForm
+                id={id}
+                button={content.button}
+                layout="inline"
+                hideLabel
+            />
+            {publicUrl && (
+                <noscript>
+                    <p>
+                        <a href={publicUrl}>Subscribe on {provider.name}</a>
+                    </p>
+                </noscript>
+            )}
+        </section>
+    )
+}
+
+<style>
+    .newsletter-cta {
+        max-width: 30rem;
+        margin: 2.5rem auto;
+        padding-block: 1.5rem;
+        border-block: 1px solid var(--border);
+        text-align: center;
+    }
+
+    .newsletter-cta[hidden] {
+        display: none;
+    }
+
+    h2 {
+        margin: 0 0 0.35rem;
+    }
+
+    .copy {
+        margin: 0 0 1rem;
+        color: var(--muted);
+    }
+</style>
