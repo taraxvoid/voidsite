@@ -1,11 +1,25 @@
 ---
+import { PortableText } from 'emdash/ui'
 import NewsletterCta from '../../components/NewsletterCta.astro'
 import Base from '../../layouts/Base.astro'
+import { NEWSLETTER_BLOCK_TYPE } from '../../lib/newsletter-cta'
 
 // Test fixture for test/e2e/newsletter-cta.spec.ts. It exists only in builds
-// with PUBLIC_E2E_FIXTURES=1 (build:e2e) and renders the CTA whether or not
-// the newsletter is enabled in site.config.
+// with PUBLIC_E2E_FIXTURES=1 (build:e2e). The three CTAs render whether or
+// not the newsletter is enabled in site.config; the saved editor block in
+// #pt-sample follows site.config, as on a real page.
 if (import.meta.env.PUBLIC_E2E_FIXTURES !== '1') return Astro.rewrite('/404')
+
+const saved = [
+    {
+        _type: 'block',
+        _key: 'p1',
+        style: 'normal',
+        markDefs: [],
+        children: [{ _type: 'span', _key: 's1', text: 'Before the block.' }],
+    },
+    { _type: NEWSLETTER_BLOCK_TYPE, _key: 'k1', heading: 'From the editor' },
+]
 ---
 
 <Base title="Newsletter CTA fixture">
@@ -27,4 +41,7 @@ if (import.meta.env.PUBLIC_E2E_FIXTURES !== '1') return Astro.rewrite('/404')
         enabled
         publicUrl="https://example.com/newsletter"
     />
+    <section id="pt-sample">
+        <PortableText value={saved} />
+    </section>
 </Base>
