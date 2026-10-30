@@ -23,7 +23,7 @@ const canonical = new URL(Astro.url.pathname, Astro.url.origin).href
             Get new posts by email. You'll get a message to confirm your
             address first, and every email has an unsubscribe link.
         </p>
-        <NewsletterForm />
+        <NewsletterForm id="newsletter" heading="Subscribe" />
         {
             publicUrl && (
                 <p>
