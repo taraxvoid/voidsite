@@ -26,6 +26,7 @@ AI assistants answer "who does X near me" from what their crawlers can read. voi
 
 - Every page carries JSON-LD for the business (`Organization`, `LocalBusiness` or a subtype, with its services, area and profiles), built from `business` in `src/site.config.ts`; empty fields are left out. Pages can add more, e.g. `faqSchema()`.
 - An optional contact form (`contact.enabled`): Cloudflare Turnstile, one message per visitor per hour, delivery by Cloudflare Email Sending, and nothing sent from previews. Turning it on adds Turnstile to the privacy and sub-processor pages.
+- An optional newsletter signup at `/subscribe` (`newsletter.enabled`), behind a provider adapter in `src/lib/newsletter/` with Buttondown as the first provider. The browser only talks to this site; the Worker passes the address to the provider (secret `NEWSLETTER_API_KEY`), which sends the confirmation email and owns the list. Same Turnstile, rate limit and preview rules as the contact form. Turning it on adds Turnstile and the provider to the privacy and sub-processor pages.
 
 ### Measure what converts
 
