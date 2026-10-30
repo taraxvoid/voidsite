@@ -1,12 +1,12 @@
 ---
 import { MAX_MESSAGE, MAX_NAME } from '../lib/contact'
+import { turnstileSiteKey } from '../lib/turnstile-client'
 import { siteConfig } from '../site.config'
 
-// Cloudflare's always-pass test key in dev; the production key rejects
-// localhost.
-const siteKey = import.meta.env.DEV
-    ? '1x00000000000000000000AA'
-    : siteConfig.contact.turnstileSiteKey
+const siteKey = turnstileSiteKey(
+    siteConfig.turnstileSiteKey,
+    import.meta.env.DEV,
+)
 ---
 
 <form
@@ -66,38 +66,7 @@ const siteKey = import.meta.env.DEV
 </form>
 
 <script>
-    type TurnstileApi = {
-        render: (
-            container: HTMLElement,
-            options: {
-                sitekey: string
-                action: string
-                appearance?: 'always' | 'execute' | 'interaction-only'
-            },
-        ) => string
-        reset: (widgetId: string) => void
-    }
-    const w = window as Window & { turnstile?: TurnstileApi }
-    const TURNSTILE_SRC =
-        'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
-
-    // Loaded only on this page, and only with JavaScript on.
-    const loadTurnstile = () =>
-        new Promise<TurnstileApi>((resolve, reject) => {
-            if (w.turnstile) return resolve(w.turnstile)
-            const script = document.createElement('script')
-            script.src = TURNSTILE_SRC
-            script.async = true
-            script.addEventListener('load', () =>
-                w.turnstile
-                    ? resolve(w.turnstile)
-                    : reject(new Error('turnstile unavailable')),
-            )
-            script.addEventListener('error', () =>
-                reject(new Error('turnstile failed to load')),
-            )
-            document.head.appendChild(script)
-        })
+    import { loadTurnstile, resetTurnstile } from '../lib/turnstile-client'
 
     const form = document.getElementById('contact') as HTMLFormElement | null
     const container = document.getElementById('contact-turnstile')
@@ -154,8 +123,7 @@ const siteKey = import.meta.env.DEV
                     'Something went wrong sending that. Try again, or email us instead.',
                 )
             } finally {
-                // Turnstile tokens are single-use.
-                if (widgetId !== undefined) w.turnstile?.reset(widgetId)
+                resetTurnstile(widgetId)
                 if (button) button.disabled = false
             }
         })
