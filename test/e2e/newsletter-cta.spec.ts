@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
+import { siteConfig } from '../../src/site.config'
 
 // The fixture page exists only in builds with PUBLIC_E2E_FIXTURES=1
 // (build:e2e). It renders three CTAs: #first (defaults), #second (custom
@@ -105,6 +106,26 @@ test.describe('without JavaScript', () => {
         ).toBeVisible()
         await expect(page.locator('form[data-newsletter]:visible')).toHaveCount(
             0,
+        )
+    })
+})
+
+// #pt-sample renders a saved editor block through <PortableText>, so it
+// follows siteConfig.newsletter.enabled like a real page would.
+test.describe('a saved editor block', () => {
+    test('renders nothing while the newsletter is off', async ({ page }) => {
+        test.skip(siteConfig.newsletter.enabled, 'newsletter enabled')
+        await page.goto(FIXTURE)
+        const sample = page.locator('#pt-sample')
+        await expect(sample.getByText('Before the block.')).toBeVisible()
+        await expect(sample.locator('[data-newsletter-cta]')).toHaveCount(0)
+    })
+
+    test('renders the CTA while the newsletter is on', async ({ page }) => {
+        test.skip(!siteConfig.newsletter.enabled, 'newsletter disabled')
+        await page.goto(FIXTURE)
+        await expect(page.locator('#pt-sample h2')).toHaveText(
+            'From the editor',
         )
     })
 })

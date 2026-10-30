@@ -1,0 +1,25 @@
+---
+import NewsletterCta from '../../components/NewsletterCta.astro'
+
+// The saved block as astro-portabletext passes it. Fields are whatever the
+// editor stored; NewsletterCta falls back to the defaults and renders
+// nothing while the newsletter is off.
+interface Props {
+    node: {
+        _type: string
+        _key: string
+        heading?: unknown
+        copy?: unknown
+        button?: unknown
+    }
+}
+
+const { node } = Astro.props
+const text = (value: unknown) => (typeof value === 'string' ? value : undefined)
+---
+
+<NewsletterCta
+    heading={text(node.heading)}
+    copy={text(node.copy)}
+    button={text(node.button)}
+/>
