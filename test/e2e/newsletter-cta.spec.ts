@@ -21,7 +21,7 @@ const stubTurnstile = async (page: Page) => {
 }
 
 const cta = (page: Page, id: string) =>
-    page.locator(`[aria-labelledby="${id}-heading"]`)
+    page.locator(`[data-newsletter-cta]:has(#${id}-heading)`)
 
 test.describe('with JavaScript', () => {
     let turnstileRequests: string[]
