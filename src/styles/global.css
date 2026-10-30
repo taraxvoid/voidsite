@@ -177,15 +177,6 @@ main,
     }
 }
 
-/* Emdash's search box reads these custom properties (see its live-search
-   component); map them onto our tokens so it follows the theme. */
-:root {
-    --emdash-search-bg: var(--surface);
-    --emdash-search-text: var(--fg);
-    --emdash-search-border: var(--border);
-    --emdash-search-border-focus: var(--focus);
-}
-
 .link-button {
     background: none;
     border: 0;
