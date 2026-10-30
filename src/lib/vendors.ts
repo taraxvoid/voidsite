@@ -1,5 +1,9 @@
 import { siteConfig } from '../site.config'
 import { googleEnabled, posthogEnabled } from './analytics'
+import { providers } from './newsletter'
+
+const { contact, newsletter } = siteConfig
+const newsletterProvider = providers[newsletter.provider]
 
 /**
  * Everyone who processes visitor data for this build: the vendors listed in
@@ -8,12 +12,27 @@ import { googleEnabled, posthogEnabled } from './analytics'
  */
 export const subProcessors = [
     ...siteConfig.subProcessors,
-    ...(siteConfig.contact.enabled
+    ...(contact.enabled || newsletter.enabled
         ? [
               {
                   name: 'Cloudflare Turnstile',
-                  purpose: 'Bot check on the contact form (contact page only)',
+                  purpose: `Bot check on ${
+                      contact.enabled && newsletter.enabled
+                          ? 'the contact and subscribe forms'
+                          : contact.enabled
+                            ? 'the contact form (contact page only)'
+                            : 'the subscribe form (subscribe page only)'
+                  }`,
                   url: 'https://www.cloudflare.com/turnstile-privacy-policy/',
+              },
+          ]
+        : []),
+    ...(newsletter.enabled
+        ? [
+              {
+                  name: newsletterProvider.name,
+                  purpose: 'Sends the newsletter and keeps its subscriber list',
+                  url: newsletterProvider.privacyUrl,
               },
           ]
         : []),

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { providers } from '../../src/lib/newsletter'
 import { siteConfig } from '../../src/site.config'
 
 const pages = [
@@ -43,6 +44,7 @@ const optional = [
     { path: '/sub-processors', enabled: siteConfig.legal.subProcessorsPage },
     { path: '/do-not-sell', enabled: siteConfig.legal.doNotSellPage },
     { path: '/contact', enabled: siteConfig.contact.enabled },
+    { path: '/subscribe', enabled: siteConfig.newsletter.enabled },
 ]
 
 test('optional pages exist exactly when site.config enables them', async ({
@@ -66,6 +68,33 @@ test('the contact endpoint is off unless the form is enabled', async ({
     expect(res.status()).toBe(404)
 })
 
+test('the newsletter endpoint is off unless signup is enabled', async ({
+    request,
+    baseURL,
+}) => {
+    test.skip(siteConfig.newsletter.enabled, 'newsletter enabled')
+    const res = await request.post('/api/newsletter', {
+        form: { email: 'a@b.co' },
+        headers: { origin: new URL(baseURL as string).origin },
+    })
+    expect(res.status()).toBe(404)
+})
+
+test('privacy copy mentions the newsletter exactly when it is on', async ({
+    page,
+}) => {
+    await page.goto('/privacy')
+    const text = await page.locator('main').innerText()
+    const provider = providers[siteConfig.newsletter.provider].name
+    if (siteConfig.newsletter.enabled) {
+        expect(text).toContain('Newsletter')
+        expect(text).toContain(provider)
+    } else {
+        expect(text).not.toContain('Newsletter')
+        expect(text).not.toContain(provider)
+    }
+})
+
 test('privacy copy mentions the contact form exactly when it is on', async ({
     page,
 }) => {
@@ -75,9 +104,11 @@ test('privacy copy mentions the contact form exactly when it is on', async ({
         expect(text).toContain('Turnstile')
         expect(text).toContain('Contact form')
     } else {
-        expect(text).not.toContain('Turnstile')
         expect(text).not.toContain('Contact form')
     }
+    expect(text.includes('Turnstile')).toBe(
+        siteConfig.contact.enabled || siteConfig.newsletter.enabled,
+    )
 })
 
 test('privacy copy names Cloudflare as the only mail service', async ({
