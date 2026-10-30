@@ -308,6 +308,7 @@ main,
     border-radius: 0.375rem;
 }
 
+.form[hidden],
 .form-status[hidden] {
     display: none;
 }
