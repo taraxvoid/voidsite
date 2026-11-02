@@ -1,0 +1,14 @@
+---
+import ContactForm from '../../components/ContactForm.astro'
+import Base from '../../layouts/Base.astro'
+
+// Test fixture for test/e2e/contact-form.spec.ts. It exists only in builds
+// with PUBLIC_E2E_FIXTURES=1 (build:e2e), and renders the form whether or not
+// the contact page is enabled in site.config.
+if (import.meta.env.PUBLIC_E2E_FIXTURES !== '1') return Astro.rewrite('/404')
+---
+
+<Base title="Contact form fixture">
+    <h1>Contact form fixture</h1>
+    <ContactForm />
+</Base>
