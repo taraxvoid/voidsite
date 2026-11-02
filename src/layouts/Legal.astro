@@ -16,7 +16,7 @@ const canonical = new URL(Astro.url.pathname, Astro.url.origin).href
         <h1>{title}</h1>
         <p class="meta">
             Last updated {siteConfig.legal.updated}
-            <span aria-hidden="true"> · </span>
+            <span aria-hidden="true"> - </span>
             <span>
                 Site version {__BUILD_VERSION__} ({__BUILD_SHA__}), built{' '}
                 {__BUILD_DATE__}
