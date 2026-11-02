@@ -1,17 +1,8 @@
 import { test as base } from '@playwright/test'
-import { siteConfig } from '../../src/site.config'
+import { paths } from './paths'
 
-// Every public page; add new ones as they are created. /contact joins when
-// the form is enabled in site.config.ts.
-export const paths = [
-    '/',
-    '/privacy',
-    '/terms',
-    '/accessibility',
-    ...(siteConfig.contact.enabled ? ['/contact'] : []),
-]
-
-const TURNSTILE_API = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
+const TURNSTILE_API =
+    'https://challenges.cloudflare.com/turnstile/v0/api.js'
 
 // Stands in for Turnstile's api.js. Tests run against a production build, so
 // the real widget would get the production site key, which rejects
@@ -52,3 +43,4 @@ export const test = base.extend({
 })
 
 export { expect } from '@playwright/test'
+export { paths }

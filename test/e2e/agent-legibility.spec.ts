@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
 import { AI_ANSWER_BOTS } from '../../src/lib/robots'
-import { paths } from './fixtures'
+import { paths, test } from './fixtures'
 
 // Dogfoods rvnflt's agent-legibility audit (isAgentLegible in
 // ravenflight/rvnflt packages/schemas/src/audit.ts): AI search crawlers can
