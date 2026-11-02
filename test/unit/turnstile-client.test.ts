@@ -19,14 +19,17 @@ beforeEach(() => {
     vi.stubGlobal('window', win)
     vi.stubGlobal('document', {
         createElement: () => {
-            const listeners: Record<string, () => void> = {}
+            let onLoad: (() => void) | undefined
+            let onError: (() => void) | undefined
             return {
                 src: '',
                 async: false,
                 addEventListener: (name: string, fn: () => void) => {
-                    listeners[name] = fn
+                    if (name === 'load') onLoad = fn
+                    else if (name === 'error') onError = fn
                 },
-                fire: (name: string) => listeners[name]?.(),
+                fire: (name: string) =>
+                    name === 'load' ? onLoad?.() : onError?.(),
             }
         },
         head: { appendChild: (s: FakeScript) => appended.push(s) },
