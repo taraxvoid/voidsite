@@ -43,7 +43,8 @@ before the page and collection are built.
 - `src/lib/directory-filter.ts`: the browser enhancer, `initDirectories()`.
   It targets `[data-directory]` roots only (no global listeners), uses
   `hidden` and `aria-pressed` / `aria-current` for state, restores category
-  on `popstate`, writes the result count to `[data-directory-status]`
+  on `popstate`, filters in place only when the target category's cards are
+  on the page (otherwise the link navigates, and `popstate` reloads), writes the result count to `[data-directory-status]`
   (`aria-live="polite"`), and skips smooth scroll under reduced motion. The
   markup contract is in the file header.
 

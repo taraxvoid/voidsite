@@ -104,16 +104,23 @@ export function initDirectory(root: HTMLElement): void {
         }
     }
 
+    // A route may ship only its own category's cards. Filtering in place is
+    // only correct when the target category's cards are on the page; otherwise
+    // the browser has to load that route.
+    const hasCards = (category: string) =>
+        cards.some((card) => card.category === category)
+
     for (const pill of pills) {
         pill.addEventListener('click', (event) => {
-            // The pill's href (when it is a link on the server) is the no-JS
-            // fallback; with JS the filter is applied in place.
-            event.preventDefault()
             const slug = pill.dataset.filter ?? ''
             if (pill.dataset.filterType === 'tag') {
+                event.preventDefault()
                 commit(toggleTag(state, slug), { push: false })
                 return
             }
+            // Not here: let the link's own href navigate (the no-JS path).
+            if (!hasCards(slug)) return
+            event.preventDefault()
             if (state.categories.includes(slug)) return
             commit(setCategory(slug), { push: true })
             window.scrollTo({
@@ -127,15 +134,13 @@ export function initDirectory(root: HTMLElement): void {
     // URL, so they reset, which matches what a fresh load of that URL shows.
     window.addEventListener('popstate', () => {
         const category = location.pathname.split('/').filter(Boolean)[0]
-        const known = pills.some(
-            (p) =>
-                p.dataset.filterType === 'category' &&
-                p.dataset.filter === category,
-        )
+        if (category && !hasCards(category)) {
+            // Entry from a route that never had these cards: load it.
+            location.reload()
+            return
+        }
         commit(
-            known && category
-                ? setCategory(category)
-                : { categories: [], tags: [] },
+            category ? setCategory(category) : { categories: [], tags: [] },
             { push: false },
         )
     })
