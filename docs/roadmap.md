@@ -270,11 +270,27 @@ they are. voidsite needs one way to declare and wire each.
 
 - #2: Unlighthouse performance and SEO checks.
 - #3: adopt the `@taraxvoid/voidflow` Playwright helper and Dependabot.
-- #4: move the `validate` job back onto voidflow's `site-ci.yml`. Blocked
-  on `taraxvoid/voidflow#82` (package manager input, file names, build
-  env) and `#11` (skip missing scripts). Related: `#83` (Worker Previews
-  action), `#84` (single-environment mode).
+- #4: done on voidflow `1.0.0-next.1`: the `validate` job calls
+  `site-ci.yml` with `package-manager: aube` (the blockers, `#82` and `#11`,
+  shipped there), lefthook uses `lefthook/base.yml`, and `cloudflare-deploy`
+  is pinned to the same tag. Still to do by hand: bump the
+  `@taraxvoid/voidflow` devDependency to `1.0.0-next.1` (needs a lockfile
+  update with aube) and move to stable `1.0.0` when it ships.
+- `cloudflare-preview` (voidflow's per-PR Worker Preview action) is not
+  adopted yet: voidsite's preview job also seeds secrets, comments the URL and
+  runs smoke tests against it. Compare before replacing it.
 - No D1 migrate step is needed from voidflow; Emdash migrates at runtime.
+
+### W9. Filterable directory (queeromaha.net)
+
+Prep for hosting queeromaha.net on voidsite. The cutover itself is not
+scheduled. Spec: `docs/superpowers/specs/2026-11-03-directory-filter-design.md`.
+
+- Pure filter and permalink logic (`src/lib/directory.ts`) and the vanilla
+  browser enhancer (`src/lib/directory-filter.ts`): done, tested.
+- Next, after the spec's open decisions: the `directory` collection, the
+  `[...filters]` route, cards, Playwright coverage.
+- Needs: W3 for permalink continuity at cutover.
 
 ### Deferred, with the trigger that revives each
 
