@@ -1,0 +1,163 @@
+---
+import { siteConfig } from '../site.config'
+import ThemeToggle from './ThemeToggle.astro'
+
+interface Props {
+    siteTitle: string
+    siteLogo: { url?: string; alt?: string } | null
+    menu?: {
+        items: { url: string; label: string; target?: string | null }[]
+    } | null
+}
+
+const { siteTitle, siteLogo, menu } = Astro.props
+const { condense, mark } = siteConfig.header
+---
+
+{/*
+  With header.condense on, the header sticks to the top; the script below
+  shrinks it while scrolling down and restores it on the way back up. With a
+  `mark`, the wordmark slides away and only the mark stays, and the mark then
+  scrolls back to the top instead of going home. JS off: a sticky header
+  whose logo links home.
+
+  Shrinking never moves the page: the outer <header> keeps the full-size
+  height (min-block-size, set by the script), the visible bar inside it
+  shrinks, and the strip it leaves is transparent and lets clicks through.
+*/}
+<header
+    class="site-header"
+    data-site-header
+    data-condense={condense ? '' : undefined}
+    data-has-mark={mark ? '' : undefined}
+>
+    <div class="site-header-bar">
+        <nav aria-label="Main">
+            <a class="brand" href="/" data-brand>
+                {mark && <img class="brand-mark" src={mark} alt="" />}
+                <span class="brand-wordmark">
+                    <span class="brand-wordmark-inner">
+                        {
+                            siteLogo ? (
+                                <img
+                                    class="brand-logo"
+                                    src={siteLogo.url}
+                                    alt={siteLogo.alt || siteTitle}
+                                />
+                            ) : (
+                                siteTitle
+                            )
+                        }
+                    </span>
+                </span>
+            </a>
+            {
+                menu?.items.map((item) => (
+                    <a
+                        href={item.url}
+                        target={item.target}
+                        rel={
+                            item.target === '_blank'
+                                ? 'noopener noreferrer'
+                                : undefined
+                        }
+                    >
+                        {item.label}
+                    </a>
+                ))
+            }
+            <span class="spacer"></span>
+            <div class="header-actions">
+                <slot name="actions" />
+                <ThemeToggle />
+            </div>
+        </nav>
+    </div>
+</header>
+
+<script>
+    import {
+        INITIAL_HEADER_STATE,
+        isPlainPrimaryClick,
+        nextHeaderState,
+        scrollBehaviorFor,
+    } from "../lib/header";
+
+    const header = document.querySelector<HTMLElement>(
+        "[data-site-header][data-condense]",
+    );
+    const bar = header?.querySelector<HTMLElement>(".site-header-bar");
+    const brand = header?.querySelector<HTMLAnchorElement>("[data-brand]");
+
+    if (header && bar && brand) {
+        const root = document.documentElement;
+        const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+        let state = INITIAL_HEADER_STATE;
+        let queued = false;
+
+        // Keep the outer header at the full-size height, measured only once
+        // the bar has finished animating back to full size.
+        function reserveFullHeight() {
+            if (!header || !bar || state.condensed) return;
+            const running = bar.getAnimations({ subtree: true });
+            if (running.length > 0) {
+                Promise.allSettled(running.map((a) => a.finished)).then(
+                    reserveFullHeight,
+                );
+                return;
+            }
+            header.style.minBlockSize = `${bar.getBoundingClientRect().height}px`;
+        }
+
+        // Anchors and focused elements must not end up under the bar.
+        new ResizeObserver(() => {
+            root.style.setProperty(
+                "--site-header-offset",
+                `${bar.getBoundingClientRect().height}px`,
+            );
+            reserveFullHeight();
+        }).observe(bar);
+
+        function render() {
+            queued = false;
+            const maxY = root.scrollHeight - window.innerHeight;
+            const next = nextHeaderState(state, window.scrollY, maxY);
+            if (next.condensed === state.condensed) {
+                state = next;
+                return;
+            }
+            // Measure while the bar is still full size (it may never have
+            // been measured, e.g. when the page opened scrolled down).
+            if (next.condensed) reserveFullHeight();
+            state = next;
+            header?.toggleAttribute("data-condensed", state.condensed);
+            if (state.condensed) brand?.setAttribute("aria-label", "Back to top");
+            else {
+                brand?.removeAttribute("aria-label");
+                reserveFullHeight();
+            }
+        }
+
+        window.addEventListener(
+            "scroll",
+            () => {
+                if (queued) return;
+                queued = true;
+                requestAnimationFrame(render);
+            },
+            { passive: true },
+        );
+        render();
+
+        // Condensed, the logo goes back to the top of this page. Modified
+        // clicks (new tab and so on) still follow the link home.
+        brand.addEventListener("click", (event) => {
+            if (!state.condensed || !isPlainPrimaryClick(event)) return;
+            event.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: scrollBehaviorFor(reducedMotion.matches),
+            });
+        });
+    }
+</script>
