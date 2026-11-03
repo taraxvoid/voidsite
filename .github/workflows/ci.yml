@@ -3,8 +3,11 @@ name: CI
 # Validate every change; deploy main to production and each PR to its own
 # Worker Preview (isolated D1/R2/KV, see the `previews` block in wrangler.jsonc).
 #
-# Local rather than calling voidflow's site-ci.yml, which assumes Bun. The
-# steps mirror it so this can move back onto voidflow once that supports aube.
+# Validation is voidflow's site-ci.yml (aube support landed in 1.0.0-next), so
+# the secrets scan, workflow lint (jactionlint + zizmor), lint, check, unit,
+# license and e2e steps are maintained there. Only the Cloudflare preview and
+# deploy jobs live here. main deploys to prod and PRs get previews; there are
+# no other environment branches.
 
 on:
   pull_request:
@@ -23,104 +26,18 @@ permissions:
 jobs:
   validate:
     name: Validate
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    if: github.event.pull_request.draft != true
     permissions:
       contents: read
-      # The paths filter lists the PR's files. Same grant as voidflow's
-      # site-ci.yml.
-      pull-requests: write
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0 # gitleaks needs the full commit history
-          persist-credentials: false
-
-      - name: Secrets scan
-        # OSS gitleaks binary: the gitleaks-action wrapper needs a paid license
-        # for orgs. Same step as voidflow's site-ci.yml.
-        run: |
-          version=8.30.1
-          case "$(uname -m)" in
-            x86_64) arch=x64; sha=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb ;;
-            aarch64|arm64) arch=arm64; sha=e4a487ee7ccd7d3a7f7ec08657610aa3606637dab924210b3aee62570fb4b080 ;;
-            *) echo "unsupported arch $(uname -m)" >&2; exit 1 ;;
-          esac
-          tarball="gitleaks_${version}_linux_${arch}.tar.gz"
-          curl -fsSL --retry 3 -o "$RUNNER_TEMP/$tarball" \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${version}/${tarball}"
-          echo "${sha}  $RUNNER_TEMP/$tarball" | sha256sum -c -
-          tar -xzf "$RUNNER_TEMP/$tarball" -C "$RUNNER_TEMP" gitleaks
-          "$RUNNER_TEMP/gitleaks" git --redact --no-banner --verbose .
-        shell: bash
-
-      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
-        id: changes
-        with:
-          filters: |
-            workflows:
-              - '.github/workflows/**'
-              - '.github/actions/**'
-
-      - uses: ./.github/actions/setup
-
-      - name: Lint CI workflows
-        if: steps.changes.outputs.workflows == 'true'
-        run: |
-          gh release download --repo jdx/jactionlint --pattern '*_linux_amd64.tar.gz' v2.1.0 --dir "$RUNNER_TEMP"
-          gh attestation verify -R jdx/jactionlint "$RUNNER_TEMP/jactionlint_2.1.0_linux_amd64.tar.gz"
-          tar xf "$RUNNER_TEMP"/jactionlint_2.1.0_linux_amd64.tar.gz -C "$RUNNER_TEMP"
-          "$RUNNER_TEMP/jactionlint" --color
-        env:
-          GH_TOKEN: ${{ github.token }}
-
-      - name: Lint
-        run: aube run lint
-
-      - name: Type check
-        run: aube run check
-
-      - name: Unit tests
-        run: aube run test:unit
-
-      - name: Check licenses
-        run: aube run check:licenses
-
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-
-      - name: Install Playwright
-        run: aube exec playwright install --with-deps chromium
-
-      # Builds with a fake Google tag id so the consent specs run, then tests.
-      - name: End-to-end tests
-        run: aube run test:e2e
-
-      # A second build with only a Tag Manager id, to cover that path too.
-      - name: End-to-end tests (Tag Manager build)
-        run: aube run test:e2e:gtm
-
-      # Runs Emdash's setup wizard with a virtual passkey and checks the
-      # cookies and storage a signed-in editor gets against the privacy page.
-      # Last, because it wipes the local D1 and patches the built config.
-      - name: End-to-end tests (signed-in editor)
-        run: aube run test:e2e:editor
-
-      - name: Upload failure reports
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: ci-reports
-          path: |
-            playwright-report/
-            test-results/
-          if-no-files-found: ignore
+      pull-requests: read # paths-filter lists PR files through the API
+    uses: taraxvoid/voidflow/.github/workflows/site-ci.yml@48b7f088d8baf831fb8cdd886f6721542ea79426 # v1.0.0-next.1
+    with:
+      package-manager: aube
+      # The e2e scripts build for themselves (with a fake Google tag id).
+      build: false
+      # test:e2e builds with a fake Google tag id and runs the suite; the
+      # others cover a Tag-Manager-only build and the signed-in editor, which
+      # runs last because it wipes the local D1 and patches the built config.
+      e2e-scripts: '["test:e2e", "test:e2e:gtm", "test:e2e:editor"]'
 
   preview:
     name: Preview
@@ -245,7 +162,7 @@ jobs:
 
       - name: Deploy
         id: deploy
-        uses: taraxvoid/voidflow/actions/cloudflare-deploy@v0.5.1
+        uses: taraxvoid/voidflow/actions/cloudflare-deploy@48b7f088d8baf831fb8cdd886f6721542ea79426 # v1.0.0-next.1
         with:
           env: prod
           command: deploy
