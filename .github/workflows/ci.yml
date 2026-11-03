@@ -16,9 +16,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+# No top-level concurrency: site-ci.yml declares the same group name
+# (ci-<workflow>-<ref>), and a caller and callee sharing one group cancel each
+# other, so validate never starts. Preview and deploy set their own below.
 
 permissions:
   contents: read
@@ -52,6 +52,9 @@ jobs:
       && vars.CLOUDFLARE_ACCOUNT_ID != ''
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    concurrency:
+      group: preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     permissions:
       contents: read
       pull-requests: write
@@ -138,6 +141,9 @@ jobs:
       && vars.CLOUDFLARE_ACCOUNT_ID != ''
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
     environment: prod
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
