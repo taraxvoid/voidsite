@@ -20,6 +20,21 @@ export const siteConfig = {
      * tracker, say). Leave empty to use the contact email only.
      */
     feedbackUrl: '',
+    header: {
+        /**
+         * Pin the header to the top and shrink it while scrolling down; it
+         * comes back to full size on the way up. Condensed, the logo scrolls
+         * back to the top (smoothly unless reduced motion is on).
+         */
+        condense: true,
+        /**
+         * Optional square brand mark (a path under public/, e.g.
+         * '/mark.svg', or a URL) shown before the logo or site name. With a
+         * mark, condensing slides the wordmark away and keeps the mark alone;
+         * without one, the logo or name just gets smaller.
+         */
+        mark: '',
+    },
     crawlers: {
         /** Let AI companies train on the site. Off unless you choose otherwise. */
         aiTraining: false,

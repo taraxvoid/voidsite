@@ -65,15 +65,138 @@ a {
     top: 0.5rem;
 }
 
-.site-header,
 .site-footer {
     border-color: var(--border);
     border-style: solid;
     border-width: 0;
 }
 
-.site-header {
-    border-bottom-width: 1px;
+.site-header-bar {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+/*
+ * Condensing header (src/components/SiteHeader.astro). The <header> is
+ * sticky and keeps its full-size height; only the bar inside shrinks, so the
+ * page never moves. The leftover strip is see-through and click-through.
+ */
+.site-header[data-condense] {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.site-header[data-condense] .site-header-bar {
+    pointer-events: auto;
+}
+
+/* Keep anchor targets and focused elements clear of the bar. The script
+   measures it; the fallback covers the no-JS sticky header. */
+:root:has(.site-header[data-condense]) {
+    scroll-padding-top: var(--site-header-offset, 5rem);
+}
+
+/* ...except the header's own controls, which are always in view: without
+   this, focusing one makes the browser scroll up to "reveal" it, and the
+   scroll up expands the header. */
+.site-header[data-condense] * {
+    scroll-margin-top: calc(-1 * var(--site-header-offset, 5rem));
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--fg);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.brand-mark {
+    display: block;
+    block-size: 2.5rem;
+    inline-size: auto;
+    /* The wordmark slides away behind it. */
+    position: relative;
+    z-index: 1;
+}
+
+/* A grid track collapses smoothly to zero width (1fr -> 0fr). */
+.brand-wordmark {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.brand-wordmark-inner {
+    min-inline-size: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.brand-logo {
+    display: block;
+    block-size: 48px;
+    inline-size: auto;
+    margin-block: -8px;
+}
+
+.site-header[data-condensed] .site-header-bar nav {
+    padding-block: 0.25rem;
+}
+
+.site-header[data-condensed] .brand-mark {
+    block-size: 2rem;
+}
+
+.site-header[data-condensed] .brand-logo {
+    block-size: 32px;
+    margin-block: -2px;
+}
+
+.site-header[data-condensed]:not([data-has-mark]) .brand {
+    font-size: 0.9rem;
+}
+
+.site-header[data-condensed][data-has-mark] .brand {
+    gap: 0;
+}
+
+.site-header[data-condensed][data-has-mark] .brand-wordmark {
+    grid-template-columns: 0fr;
+    opacity: 0;
+    translate: -1rem 0;
+}
+
+.site-header[data-condensed] .theme-toggle label {
+    padding-block: 0.1rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .site-header[data-condense] :is(nav, .brand, .brand-mark, .brand-logo) {
+        transition-duration: 0.2s;
+        transition-timing-function: ease-out;
+    }
+
+    .site-header[data-condense] nav {
+        transition-property: padding;
+    }
+
+    .site-header[data-condense] .brand {
+        transition-property: gap, font-size;
+    }
+
+    .site-header[data-condense] :is(.brand-mark, .brand-logo) {
+        transition-property: block-size, margin;
+    }
+
+    .site-header[data-condense] .brand-wordmark {
+        transition:
+            grid-template-columns 0.2s ease-out,
+            opacity 0.15s,
+            translate 0.2s ease-out;
+    }
 }
 
 .site-footer {
@@ -96,6 +219,13 @@ a {
 
 .site-header nav .spacer {
     margin-inline-start: auto;
+}
+
+.header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 main,
