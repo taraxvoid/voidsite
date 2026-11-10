@@ -2,11 +2,15 @@ import { definePlugin } from 'emdash'
 import { CTA_DEFAULTS, NEWSLETTER_BLOCK_TYPE } from '../../lib/newsletter-cta'
 import type { NewsletterSignupOptions } from './descriptor'
 
-const field = (action_id: keyof typeof CTA_DEFAULTS, label: string) => ({
+const textField = (
+    action_id: 'heading' | 'copy' | 'button',
+    label: string,
+    initial_value: string,
+) => ({
     type: 'text_input' as const,
     action_id,
     label,
-    initial_value: CTA_DEFAULTS[action_id],
+    initial_value,
 })
 
 // The renderer stays registered either way, so pages saved while the
@@ -25,9 +29,9 @@ export const createPlugin = ({ offerBlock }: NewsletterSignupOptions) =>
                           category: 'Sections',
                           description: 'Email signup form with a short pitch',
                           fields: [
-                              field('heading', 'Heading'),
-                              field('copy', 'Copy'),
-                              field('button', 'Button label'),
+                              textField('heading', 'Heading', CTA_DEFAULTS.heading),
+                              textField('copy', 'Copy', CTA_DEFAULTS.copy),
+                              textField('button', 'Button label', CTA_DEFAULTS.button),
                           ],
                       },
                   ]
