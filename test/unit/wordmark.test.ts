@@ -79,4 +79,34 @@ ${svg('', '<title>Layer 1</title><path d="M0 0"/>')}
             /foreignObject/,
         )
     })
+
+    test('catches handlers after a slash, which HTML treats as a separator', () => {
+        expect(() =>
+            inlineWordmark(svg('', '<path/onload="x()"/>'), 'x'),
+        ).toThrow(/event handler/)
+        expect(() =>
+            inlineWordmark('<svg/onload="x()" viewBox="0 0 1 1"></svg>', 'x'),
+        ).toThrow(/event handler/)
+    })
+
+    test('refuses javascript: URLs, however they are cased or spaced', () => {
+        expect(() =>
+            inlineWordmark(
+                svg('', '<a href="javascript:x()"><path/></a>'),
+                'x',
+            ),
+        ).toThrow(/javascript:/)
+        expect(() =>
+            inlineWordmark(
+                svg('', '<a href=" JavaScript :x()"><path/></a>'),
+                'x',
+            ),
+        ).toThrow(/javascript:/)
+    })
+
+    test('does not mistake ordinary attributes for handlers', () => {
+        expect(() =>
+            inlineWordmark(svg('', '<path data-one="1" font="x"/>'), 'x'),
+        ).not.toThrow()
+    })
 })

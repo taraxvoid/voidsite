@@ -272,11 +272,14 @@ async function addWordmark(page: Page) {
     await page.evaluate(() => {
         const inner = document.querySelector('.brand-wordmark-inner')
         if (!inner) return
-        inner.innerHTML =
+        const svg = new DOMParser().parseFromString(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20" class="brand-logo brand-logo-svg" role="img" aria-label="Wordmark">' +
-            '<path data-test="plain" d="M0 0h60v20H0z"/>' +
-            '<path data-test="own" fill="rgb(222, 153, 23)" d="M70 0h30v20H70z"/>' +
-            '</svg>'
+                '<path data-test="plain" d="M0 0h60v20H0z"/>' +
+                '<path data-test="own" fill="rgb(222, 153, 23)" d="M70 0h30v20H70z"/>' +
+                '</svg>',
+            'image/svg+xml',
+        ).documentElement
+        inner.replaceChildren(svg)
     })
 }
 
