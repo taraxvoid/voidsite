@@ -34,6 +34,15 @@ export const siteConfig = {
          * without one, the logo or name just gets smaller.
          */
         mark: '',
+        /**
+         * Optional wordmark SVG under src/brand/ (e.g.
+         * '/src/brand/wordmark.svg'), inlined into the header in place of
+         * the Emdash site logo or the site name. Paths with no fill of their
+         * own take the header's text color, or `--brand-wordmark` if the site
+         * sets it in global.css, so one file follows light and dark. Named
+         * by the site title for screen readers.
+         */
+        wordmark: '',
     },
     crawlers: {
         /** Let AI companies train on the site. Off unless you choose otherwise. */
