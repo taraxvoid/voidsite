@@ -63,8 +63,10 @@ Click **Use this template** on GitHub. Then, in your copy:
    aube exec wrangler d1 create voidsite-preview        # copy its id into previews.d1_databases
    aube exec wrangler r2 bucket create voidsite-media
    aube exec wrangler r2 bucket create voidsite-media-preview
+   aube exec wrangler kv namespace create voidsite-preview-session      # copy its id into previews.kv_namespaces (SESSION)
+   aube exec wrangler kv namespace create voidsite-preview-rate-limit   # copy its id into previews.kv_namespaces (RATE_LIMIT)
    ```
-   Production D1 is created on the first deploy (the starter's behaviour); the preview database needs its id in `wrangler.jsonc` because previews don't inherit production settings.
+   Production D1 and KV is created on the first deploy (the starter's behaviour); the preview database needs its id in `wrangler.jsonc` because previews don't inherit production settings.
 
    For mail (Emdash sign-in links and invites, the contact form), onboard the domain of `mailFrom` in `site.config.ts` with Cloudflare Email Sending in the dashboard. Until it is accepted, Cloudflare rejects every message; the `EMAIL` binding in `wrangler.jsonc` needs no other setup or API key.
 5. **Encryption key.** Emdash needs `EMDASH_ENCRYPTION_KEY` (it encrypts plugin secrets and checks it at startup). Generate one per environment with Emdash's own tool; never reuse or commit it:
@@ -104,7 +106,7 @@ The package manager is [aube](https://aube.sh/). `mise.toml` installs it (or `mi
 - Push to `main`: validate, then check placeholders, deploy to production (the `prod` environment) and smoke-test the live site.
 - Pull request: validate, then `wrangler preview` (open beta) publishes an isolated Preview named after the branch, using the `previews` D1, R2 and KV in `wrangler.jsonc`, and comments its URL on the PR. Previews can't write to production content. If you protect previews with Cloudflare Access, the smoke tests need to send Access headers.
 
-Unverified until the first real run: the preview job's URL extraction (`wrangler preview --json`'s shape isn't documented yet) and whether KV and D1 auto-provision for previews. Check the first PR's job log.
+Previews don't auto-provision D1 or KV, so create them once as in setup step 4. Still unverified until the first real run: the preview job's URL extraction (`wrangler preview --json`'s shape isn't documented yet). Check the first PR's job log.
 
 ## Editing content
 

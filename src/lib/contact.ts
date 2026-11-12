@@ -73,6 +73,6 @@ export function buildEmail(
         subject: input.name
             ? `${site} contact from ${input.name}`
             : `${site} contact`,
-        text: `${input.message}\n\n— ${input.name ? `${input.name} ` : ''}<${input.email}>`,
+        text: `${input.message}\n\n- ${input.name ? `${input.name} ` : ''}<${input.email}>`,
     }
 }
