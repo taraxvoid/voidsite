@@ -20,7 +20,7 @@ const wordmarkFiles = import.meta.glob<string>('/src/brand/*.svg', {
     import: 'default',
     eager: true,
 })
-const wordmarkSvg = resolveWordmark(wordmarkFiles, wordmark, siteTitle)
+const wordmarkSvg = resolveWordmark(wordmarkFiles, wordmark)
 ---
 
 {/*
@@ -48,7 +48,13 @@ const wordmarkSvg = resolveWordmark(wordmarkFiles, wordmark, siteTitle)
                     <span class="brand-wordmark-inner">
                         {
                             wordmarkSvg ? (
-                                <Fragment set:html={wordmarkSvg} />
+                                <span
+                                    class="brand-logo brand-logo-svg"
+                                    role="img"
+                                    aria-label={siteTitle}
+                                >
+                                    <Fragment set:html={wordmarkSvg} />
+                                </span>
                             ) : siteLogo ? (
                                 <img
                                     class="brand-logo"

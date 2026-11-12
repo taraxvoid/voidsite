@@ -146,14 +146,21 @@ a {
     padding-block: 0.25rem;
 }
 
-/* header.wordmark: an inline SVG, drawn tight to its glyphs (a raster logo
-   usually carries padding, hence the negative margins above). Unfilled paths
-   take the header text color, or --brand-wordmark when the site sets it. */
+/* header.wordmark: an inline SVG in a role="img" wrapper, drawn tight to
+   its glyphs (a raster logo usually carries padding, hence the negative
+   margins above). Unfilled paths take the header text color, or
+   --brand-wordmark when the site sets it. */
 .brand-logo-svg {
     block-size: 1.75rem;
     margin-block: 0;
     color: var(--brand-wordmark, currentColor);
     fill: currentColor;
+}
+
+.brand-logo-svg > svg {
+    display: block;
+    block-size: 100%;
+    inline-size: auto;
 }
 
 .site-header[data-condensed] .brand-mark {

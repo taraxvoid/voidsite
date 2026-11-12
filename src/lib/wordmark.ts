@@ -13,12 +13,11 @@
  * passes).
  */
 
-const escapeAttr = (value: string) =>
-    value
-        .replaceAll('&', '&amp;')
-        .replaceAll('"', '&quot;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
+/**
+ * Bounds the work the patterns below do. A wordmark is a few KB; the strip
+ * patterns would go quadratic on a large file full of unclosed `<!--`.
+ */
+const MAX_LENGTH = 64 * 1024
 
 /**
  * Drawing elements, lowercased. Not here on purpose: a (would nest inside
@@ -50,20 +49,29 @@ const ALLOWED_ELEMENTS = new Set([
     'metadata',
 ])
 
-/** Root attributes this function sets itself, or drops so CSS can size it. */
-const REPLACED =
-    /[\s/](?:width|height|class|role|aria-label|aria-hidden)\s*=\s*(?:"[^"]*"|'[^']*')/gi
+/** Root size attributes, dropped so CSS sizes the wordmark. */
+const SIZE = /[\s/](?:width|height)\s*=\s*(?:"[^"]*"|'[^']*')/gi
 
 function refuse(reason: string): never {
     throw new Error(`header.wordmark must not contain ${reason}`)
 }
 
-export function inlineWordmark(source: string, label: string): string {
+/**
+ * The wordmark's markup, checked and ready to inline. It carries no label:
+ * SiteHeader wraps it in an element with role="img" and the site title as
+ * aria-label, which Astro escapes, so nothing here builds HTML from text.
+ */
+export function inlineWordmark(source: string): string {
+    if (source.length > MAX_LENGTH) {
+        throw new Error(
+            'header.wordmark is over 64 KB: optimize it (svgo) first',
+        )
+    }
     const markup = source
         .replace(/<\?xml[\s\S]*?\?>/g, '')
         .replace(/<!DOCTYPE[\s\S]*?>/gi, '')
         .replace(/<!--[\s\S]*?-->/g, '')
-        // Editors write layer names here; it would compete with aria-label.
+        // Editors write layer names here; they would show as a tooltip.
         .replace(/<title[\s\S]*?<\/title>/gi, '')
         .trim()
 
@@ -99,9 +107,7 @@ export function inlineWordmark(source: string, label: string): string {
         refuse('a url() to anything but an #id in the file')
     }
 
-    const attrs = open[1].replace(REPLACED, '')
-    const root = `<svg${attrs} class="brand-logo brand-logo-svg" role="img" aria-label="${escapeAttr(label)}">`
-    return root + markup.slice(open[0].length)
+    return open[0].replace(SIZE, '') + markup.slice(open[0].length)
 }
 
 /**
@@ -113,14 +119,13 @@ export function inlineWordmark(source: string, label: string): string {
 export function resolveWordmark(
     files: Record<string, string>,
     path: string,
-    label: string,
 ): string {
     if (!path) return ''
     const file = files[path]
     if (file === undefined) {
         throw new Error(
-            `header.wordmark: ${path} not found (expected /src/brand/<name>.svg)`,
+            `header.wordmark: ${path} not found; put the file under /src/brand/`,
         )
     }
-    return inlineWordmark(file, label)
+    return inlineWordmark(file)
 }

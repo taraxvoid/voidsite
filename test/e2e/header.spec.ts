@@ -267,19 +267,25 @@ test.describe('with a brand mark', () => {
 })
 
 // The template ships without a wordmark (site.config.ts header.wordmark), so
-// swap in the markup SiteHeader renders for one: inlineWordmark's output.
+// build the markup SiteHeader renders for one: the role="img" wrapper around
+// inlineWordmark's output.
 async function addWordmark(page: Page) {
     await page.evaluate(() => {
         const inner = document.querySelector('.brand-wordmark-inner')
         if (!inner) return
         const svg = new DOMParser().parseFromString(
-            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20" class="brand-logo brand-logo-svg" role="img" aria-label="Wordmark">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20">' +
                 '<path data-test="plain" d="M0 0h60v20H0z"/>' +
                 '<path data-test="own" fill="rgb(222, 153, 23)" d="M70 0h30v20H70z"/>' +
                 '</svg>',
             'image/svg+xml',
         ).documentElement
-        inner.replaceChildren(svg)
+        const wrapper = document.createElement('span')
+        wrapper.className = 'brand-logo brand-logo-svg'
+        wrapper.setAttribute('role', 'img')
+        wrapper.setAttribute('aria-label', 'Wordmark')
+        wrapper.append(svg)
+        inner.replaceChildren(wrapper)
     })
 }
 
