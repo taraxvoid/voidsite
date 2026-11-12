@@ -1,5 +1,5 @@
 ---
-import { inlineWordmark } from '../lib/wordmark'
+import { resolveWordmark } from '../lib/wordmark'
 import { siteConfig } from '../site.config'
 import ThemeToggle from './ThemeToggle.astro'
 
@@ -20,16 +20,7 @@ const wordmarkFiles = import.meta.glob<string>('/src/brand/*.svg', {
     import: 'default',
     eager: true,
 })
-let wordmarkSvg = ''
-if (wordmark) {
-    const file = wordmarkFiles[wordmark]
-    if (file === undefined) {
-        throw new Error(
-            `header.wordmark: ${wordmark} not found (expected /src/brand/<name>.svg)`,
-        )
-    }
-    wordmarkSvg = inlineWordmark(file, siteTitle)
-}
+const wordmarkSvg = resolveWordmark(wordmarkFiles, wordmark, siteTitle)
 ---
 
 {/*
