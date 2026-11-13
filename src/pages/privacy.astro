@@ -6,6 +6,7 @@ import {
     posthogEnabled,
     posthogHost,
 } from '../lib/analytics'
+import { providers } from '../lib/newsletter'
 import { siteConfig } from '../site.config'
 
 // Template copy, not legal advice: review it with counsel before launch and
@@ -14,6 +15,7 @@ import { siteConfig } from '../site.config'
 const posthogDomain = new URL(posthogHost).host
 const anyAnalytics = googleEnabled || posthogEnabled
 const host = siteConfig.subProcessors[0]?.name ?? 'our hosting provider'
+const newsletterProvider = providers[siteConfig.newsletter.provider]
 ---
 
 <Legal
@@ -207,6 +209,37 @@ const host = siteConfig.subProcessors[0]?.name ?? 'our hosting provider'
             </>
         )
     }
+    {
+        siteConfig.newsletter.enabled && (
+            <>
+                <h2>Newsletter</h2>
+                <p>
+                    The subscribe page loads Cloudflare Turnstile from{' '}
+                    <code>challenges.cloudflare.com</code> to check that a
+                    person, not a bot, is signing up. It runs only on that page
+                    and only with JavaScript on. To do that check, Cloudflare
+                    receives your IP address and signals about your browser;
+                    see{' '}
+                    <a href="https://www.cloudflare.com/turnstile-privacy-policy/"
+                        >Cloudflare's Turnstile privacy addendum</a
+                    >.
+                </p>
+                <p>
+                    When you subscribe, the site sends your email address and IP
+                    address to {newsletterProvider.name}, which sends the
+                    newsletter and keeps the subscriber list. It uses your IP
+                    address to keep out spam signups. You're only added once you
+                    confirm the email it sends you, and every newsletter has an
+                    unsubscribe link. See{' '}
+                    <a href={newsletterProvider.privacyUrl}
+                        >{newsletterProvider.name}'s privacy policy</a
+                    >. To limit abuse, the site keeps a one-way hash of your IP
+                    address for one hour, which can't be turned back into the
+                    address.
+                </p>
+            </>
+        )
+    }
 
     <h2>Editors and signed-in users</h2>
     <p>
@@ -228,6 +261,15 @@ const host = siteConfig.subProcessors[0]?.name ?? 'our hosting provider'
                     Contact messages: in our inbox until no longer needed, or
                     until you ask us to delete them. The hashed IP address: one
                     hour.
+                </li>
+            )
+        }
+        {
+            siteConfig.newsletter.enabled && (
+                <li>
+                    Newsletter: with {newsletterProvider.name} until you
+                    unsubscribe or ask us to delete it. The hashed IP address:
+                    one hour.
                 </li>
             )
         }

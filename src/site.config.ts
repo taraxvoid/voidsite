@@ -4,6 +4,8 @@ import type { ContextInput } from './lib/context'
  * The one file to edit per site. Everything site-specific that the layout and
  * the legal pages need lives here.
  */
+import type { NewsletterProviderId } from './lib/newsletter'
+
 export const siteConfig = {
     /** Public name, used in legal copy and metadata fallbacks. */
     name: 'Chantilly',
@@ -102,16 +104,35 @@ export const siteConfig = {
         services: [] as { name: string; description: string }[],
     },
     /**
+     * Public Turnstile site key for the contact and newsletter forms. Set it,
+     * the Worker secret TURNSTILE_SECRET and the TURNSTILE_HOSTNAMES var in
+     * wrangler.jsonc before enabling either form.
+     */
+    turnstileSiteKey: '',
+    /**
      * Contact form (/contact): Turnstile bot check, one message per visitor
      * per hour, emailed from `mailFrom` to `contactEmail`. Off by default.
-     * Enabling it adds Turnstile to the privacy and sub-processor pages; set
-     * the Worker secret TURNSTILE_SECRET and the TURNSTILE_HOSTNAMES var in
-     * wrangler.jsonc first.
+     * Enabling it adds Turnstile to the privacy and sub-processor pages.
      */
     contact: {
         enabled: false,
-        /** Public Turnstile site key; the secret is a Worker secret. */
-        turnstileSiteKey: '',
+    },
+    /**
+     * Newsletter signup (/subscribe): Turnstile bot check, one signup per
+     * visitor per hour, passed to the provider, which sends the confirmation
+     * email and owns the list. Off by default. Enabling it adds Turnstile and
+     * the provider to the privacy and sub-processor pages; set the Worker
+     * secret NEWSLETTER_API_KEY (the provider's API key) first.
+     */
+    newsletter: {
+        enabled: false,
+        provider: 'buttondown' as NewsletterProviderId,
+        /**
+         * Optional: the provider's public page for the newsletter (e.g.
+         * https://buttondown.com/you), linked as the way to subscribe without
+         * JavaScript and to read past issues.
+         */
+        publicUrl: '',
     },
     /** Vendors that process visitor data on the site's behalf. */
     subProcessors: [

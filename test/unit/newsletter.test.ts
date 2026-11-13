@@ -22,13 +22,12 @@ describe('parseSignup', () => {
         })
     })
 
-    test.each([
-        '',
-        'not an email',
-        `${'a'.repeat(250)}@b.co`,
-    ])('rejects %j', (email) => {
-        expect(parseSignup(form({ email }))).toEqual({ kind: 'invalid' })
-    })
+    test.each(['', 'not an email', `${'a'.repeat(250)}@b.co`])(
+        'rejects %j',
+        (email) => {
+            expect(parseSignup(form({ email }))).toEqual({ kind: 'invalid' })
+        },
+    )
 })
 
 describe('rateLimitKey scope', () => {
@@ -37,9 +36,7 @@ describe('rateLimitKey scope', () => {
         const ip = '203.0.113.7'
         const key = await rateLimitKey(site, ip, 'newsletter')
         expect(key).toMatch(/^newsletter:[0-9a-f]{64}$/)
-        expect(key.slice(11)).not.toBe(
-            (await rateLimitKey(site, ip)).slice(8),
-        )
+        expect(key.slice(11)).not.toBe((await rateLimitKey(site, ip)).slice(8))
     })
 })
 
@@ -65,9 +62,7 @@ describe('buttondown', () => {
         const [{ url, init }] = calls
         expect(url).toBe('https://api.buttondown.com/v1/subscribers')
         expect(init.method).toBe('POST')
-        expect(new Headers(init.headers).get('Authorization')).toBe(
-            'Token key',
-        )
+        expect(new Headers(init.headers).get('Authorization')).toBe('Token key')
         expect(JSON.parse(init.body as string)).toEqual({
             email_address: 'a@b.co',
             ip_address: '203.0.113.7',
