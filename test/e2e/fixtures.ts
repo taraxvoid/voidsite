@@ -1,8 +1,7 @@
 import { test as base } from '@playwright/test'
 import { paths } from './paths'
 
-const TURNSTILE_API =
-    'https://challenges.cloudflare.com/turnstile/v0/api.js'
+const TURNSTILE_API = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
 
 // Stands in for Turnstile's api.js. Tests run against a production build, so
 // the real widget would get the production site key, which rejects
