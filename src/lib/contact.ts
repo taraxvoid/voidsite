@@ -1,6 +1,7 @@
 /**
  * Contact form validation and email shape. Pure, so it is unit-tested; the
- * route (src/pages/api/contact.ts) adds Turnstile, rate limiting and delivery.
+ * route (src/pages/api/contact.ts) adds Turnstile, rate limiting and delivery
+ * through Cloudflare Email Sending.
  */
 
 export const RATE_LIMIT_TTL_SECONDS = 3600
@@ -58,6 +59,7 @@ export async function rateLimitKey(site: string, ip: string): Promise<string> {
     return `contact:${hex}`
 }
 
+// The message builder that Cloudflare's send_email binding accepts.
 export function buildEmail(
     input: ContactInput,
     site: string,
@@ -65,9 +67,9 @@ export function buildEmail(
     to: string,
 ) {
     return {
-        from,
-        to: [to],
-        reply_to: input.email,
+        from: { email: from, name: site },
+        to,
+        replyTo: input.email,
         subject: input.name
             ? `${site} contact from ${input.name}`
             : `${site} contact`,

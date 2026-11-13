@@ -3,7 +3,6 @@
 declare namespace Cloudflare {
     interface Env {
         TURNSTILE_SECRET?: string
-        RESEND_API_KEY?: string
         /** Local dev only: log instead of sending. Never set in production. */
         CONTACT_DRY_RUN?: string
     }

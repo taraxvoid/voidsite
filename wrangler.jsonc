@@ -9,13 +9,15 @@
     // the passkey relying-party id from it. Set it to the production URL.
     "vars": {
         "EMDASH_SITE_URL": "https://example.com",
-        // Contact form (siteConfig.contact.enabled). Secrets (wrangler secret
-        // put): TURNSTILE_SECRET, RESEND_API_KEY. TURNSTILE_HOSTNAMES is
-        // comma-separated; empty refuses every submission.
-        "TURNSTILE_HOSTNAMES": "example.com",
-        "CONTACT_FROM": "contact@example.com",
-        "CONTACT_TO": "hello@example.com"
+        // Contact form (siteConfig.contact.enabled). Secret (wrangler secret
+        // put): TURNSTILE_SECRET. TURNSTILE_HOSTNAMES is comma-separated;
+        // empty refuses every submission.
+        "TURNSTILE_HOSTNAMES": "example.com"
     },
+    // Cloudflare Email Sending, from siteConfig.mailFrom: Emdash's sign-in
+    // links and invites, and contact-form messages. Onboard the sender
+    // domain first (see README).
+    "send_email": [{ "name": "EMAIL" }],
     // Contact-form rate limit (hashed IP, 1 hour TTL). Provisioned on deploy.
     "kv_namespaces": [{ "binding": "RATE_LIMIT" }],
     "d1_databases": [
@@ -52,10 +54,10 @@
         // No Turnstile hostnames: the contact form refuses to send from
         // previews.
         "vars": {
-            "TURNSTILE_HOSTNAMES": "",
-            "CONTACT_FROM": "contact@example.com",
-            "CONTACT_TO": "hello@example.com"
+            "TURNSTILE_HOSTNAMES": ""
         },
+        // So preview editors can get sign-in links.
+        "send_email": [{ "name": "EMAIL" }],
         "d1_databases": [
             {
                 "binding": "DB",

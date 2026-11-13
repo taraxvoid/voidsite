@@ -64,8 +64,9 @@ describe('buildEmail', () => {
             'from@x',
             'to@x',
         )
-        expect(email.reply_to).toBe('r@co.com')
-        expect(email.to).toEqual(['to@x'])
+        expect(email.replyTo).toBe('r@co.com')
+        expect(email.from).toEqual({ email: 'from@x', name: 'Site' })
+        expect(email.to).toBe('to@x')
         expect(email.subject).toContain('Sam')
         expect(email.text).toContain('hello')
     })

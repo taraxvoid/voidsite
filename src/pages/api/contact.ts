@@ -10,7 +10,8 @@ import { verifyTurnstile } from '../../lib/turnstile'
 import { siteConfig } from '../../site.config'
 
 // Honeypot, Turnstile (action and hostname checked), one message per visitor
-// per hour, delivery via Resend. 404 unless siteConfig.contact.enabled.
+// per hour, delivery via Cloudflare Email Sending (the EMAIL binding). 404
+// unless siteConfig.contact.enabled.
 export const prerender = false
 
 const ACTION = 'contact'
@@ -54,8 +55,8 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     const email = buildEmail(
         parsed.data,
         siteConfig.name,
-        env.CONTACT_FROM,
-        env.CONTACT_TO,
+        siteConfig.mailFrom,
+        siteConfig.contactEmail,
     )
     if (env.CONTACT_DRY_RUN === '1') {
         console.log('contact dry run', email)
@@ -63,16 +64,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     }
 
     try {
-        const send = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${env.RESEND_API_KEY}`,
-                'Content-Type': 'application/json',
-            },
-            signal: AbortSignal.timeout(10_000),
-            body: JSON.stringify(email),
-        })
-        if (!send.ok) throw new Error(`resend ${send.status}`)
+        await env.EMAIL.send(email)
     } catch (error) {
         console.error('contact delivery failed', error)
         await env.RATE_LIMIT.delete(limitKey)
