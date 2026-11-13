@@ -1,0 +1,42 @@
+---
+import NewsletterForm from '../components/NewsletterForm.astro'
+import Base from '../layouts/Base.astro'
+import { providers } from '../lib/newsletter'
+import { siteConfig } from '../site.config'
+
+// Optional page: enabled with siteConfig.newsletter.enabled.
+if (!siteConfig.newsletter.enabled) return Astro.rewrite('/404')
+
+const { publicUrl } = siteConfig.newsletter
+const provider = providers[siteConfig.newsletter.provider]
+const canonical = new URL(Astro.url.pathname, Astro.url.origin).href
+---
+
+<Base
+    title="Subscribe"
+    description={`Get ${siteConfig.name} by email.`}
+    canonical={canonical}
+>
+    <div style="max-width: var(--measure)">
+        <h1>Subscribe</h1>
+        <p>
+            Get new posts by email. You'll get a message to confirm your
+            address first, and every email has an unsubscribe link.
+        </p>
+        <NewsletterForm id="newsletter" heading="Subscribe" />
+        {
+            publicUrl && (
+                <p>
+                    You can also <a href={publicUrl}>subscribe and read past
+                    issues on {provider.name}</a>.
+                </p>
+            )
+        }
+        <p class="muted">
+            {provider.name} sends the newsletter and keeps the list. The form
+            uses Cloudflare Turnstile to keep bots out; see <a href="/privacy"
+                >Privacy</a
+            >.
+        </p>
+    </div>
+</Base>

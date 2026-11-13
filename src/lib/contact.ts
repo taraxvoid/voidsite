@@ -13,6 +13,9 @@ export const MAX_EMAIL = 254
 // Deliberately loose: one @, no whitespace. Delivery is the real validation.
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+$/
 
+export const isEmail = (value: string) =>
+    value.length > 0 && value.length <= MAX_EMAIL && EMAIL_PATTERN.test(value)
+
 export type ContactInput = { message: string; email: string; name?: string }
 
 export type ParsedContact =
@@ -33,8 +36,7 @@ export function parseContact(form: FormData): ParsedContact {
     const email = field(form, 'email')
     const name = field(form, 'name')
     if (!message || message.length > MAX_MESSAGE) return { kind: 'invalid' }
-    if (!email || email.length > MAX_EMAIL || !EMAIL_PATTERN.test(email))
-        return { kind: 'invalid' }
+    if (!isEmail(email)) return { kind: 'invalid' }
     if (name.length > MAX_NAME || /[\r\n]/.test(name))
         return { kind: 'invalid' }
     return {
@@ -44,19 +46,23 @@ export function parseContact(form: FormData): ParsedContact {
 }
 
 /**
- * KV key for the per-visitor limit. The IP is hashed (salted with the site,
- * so keys don't match across sites) and the entry expires after an hour, so
- * the store never holds a raw address.
+ * KV key for the per-visitor limit. The IP is hashed (salted with the site
+ * and the form, so keys don't match across sites or forms) and the entry
+ * expires after an hour, so the store never holds a raw address.
  */
-export async function rateLimitKey(site: string, ip: string): Promise<string> {
+export async function rateLimitKey(
+    site: string,
+    ip: string,
+    scope: 'contact' | 'newsletter' = 'contact',
+): Promise<string> {
     const digest = await crypto.subtle.digest(
         'SHA-256',
-        new TextEncoder().encode(`${site} contact ${ip}`),
+        new TextEncoder().encode(`${site} ${scope} ${ip}`),
     )
     const hex = [...new Uint8Array(digest)]
         .map((b) => b.toString(16).padStart(2, '0'))
         .join('')
-    return `contact:${hex}`
+    return `${scope}:${hex}`
 }
 
 // The message builder that Cloudflare's send_email binding accepts.
