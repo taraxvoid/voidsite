@@ -29,9 +29,17 @@ export const createPlugin = ({ offerBlock }: NewsletterSignupOptions) =>
                           category: 'Sections',
                           description: 'Email signup form with a short pitch',
                           fields: [
-                              textField('heading', 'Heading', CTA_DEFAULTS.heading),
+                              textField(
+                                  'heading',
+                                  'Heading',
+                                  CTA_DEFAULTS.heading,
+                              ),
                               textField('copy', 'Copy', CTA_DEFAULTS.copy),
-                              textField('button', 'Button label', CTA_DEFAULTS.button),
+                              textField(
+                                  'button',
+                                  'Button label',
+                                  CTA_DEFAULTS.button,
+                              ),
                           ],
                       },
                   ]
