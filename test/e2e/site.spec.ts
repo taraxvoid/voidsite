@@ -1,7 +1,5 @@
-import { expect, type Page, test } from '@playwright/test'
-
-// Every public page; add new ones as they are created.
-const paths = ['/', '/privacy', '/terms', '/accessibility']
+import type { Page } from '@playwright/test'
+import { expect, paths, test } from './fixtures'
 
 for (const path of paths) {
     test.describe(path, () => {

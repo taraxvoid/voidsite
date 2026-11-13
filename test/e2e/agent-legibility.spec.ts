@@ -1,5 +1,6 @@
-import { expect, test } from '@playwright/test'
+import { expect } from '@playwright/test'
 import { AI_ANSWER_BOTS } from '../../src/lib/robots'
+import { paths, test } from './fixtures'
 
 // Dogfoods rvnflt's agent-legibility audit (isAgentLegible in
 // ravenflight/rvnflt packages/schemas/src/audit.ts): AI search crawlers can
@@ -9,9 +10,6 @@ import { AI_ANSWER_BOTS } from '../../src/lib/robots'
 // text isn't asserted: with no content it is a "No posts yet" list, which
 // an agent can't learn the business from; that arrives with the
 // local-service content model.
-
-// Every public page; add new ones as they are created.
-const paths = ['/', '/privacy', '/terms', '/accessibility']
 
 // rvnflt's JS_ONLY_TEXT_LENGTH_THRESHOLD.
 const MIN_TEXT_WITHOUT_JS = 200
