@@ -265,3 +265,103 @@ test.describe('with a brand mark', () => {
             .toBeGreaterThan(10)
     })
 })
+
+// The template ships without a wordmark (site.config.ts header.wordmark), so
+// build the markup SiteHeader renders for one: the role="img" wrapper around
+// inlineWordmark's output.
+async function addWordmark(page: Page) {
+    await page.evaluate(() => {
+        const inner = document.querySelector('.brand-wordmark-inner')
+        if (!inner) return
+        const svg = new DOMParser().parseFromString(
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20">' +
+                '<path data-test="plain" d="M0 0h60v20H0z"/>' +
+                '<path data-test="own" fill="rgb(222, 153, 23)" d="M70 0h30v20H70z"/>' +
+                '</svg>',
+            'image/svg+xml',
+        ).documentElement
+        const wrapper = document.createElement('span')
+        wrapper.className = 'brand-logo brand-logo-svg'
+        wrapper.setAttribute('role', 'img')
+        wrapper.setAttribute('aria-label', 'Wordmark')
+        wrapper.append(svg)
+        inner.replaceChildren(wrapper)
+    })
+}
+
+const fillOf = (page: Page, which: string) =>
+    page
+        .locator(`.brand-logo-svg [data-test="${which}"]`)
+        .evaluate((el) => getComputedStyle(el).fill)
+
+const headerColor = (page: Page) =>
+    page.locator('[data-brand]').evaluate((el) => getComputedStyle(el).color)
+
+test.describe('with an SVG wordmark', () => {
+    test.use({ reducedMotion: 'reduce' })
+
+    for (const scheme of ['light', 'dark'] as const) {
+        test.describe(`${scheme} scheme`, () => {
+            test.use({ colorScheme: scheme })
+
+            test('unfilled paths take the header text color', async ({
+                page,
+            }) => {
+                await openTall(page)
+                await addWordmark(page)
+                expect(await fillOf(page, 'plain')).toBe(
+                    await headerColor(page),
+                )
+                // Paths with a fill of their own (an accent) keep it.
+                expect(await fillOf(page, 'own')).toBe('rgb(222, 153, 23)')
+            })
+
+            test('has no axe violations', async ({ page }) => {
+                await openTall(page)
+                await addWordmark(page)
+                const { violations } = await new AxeBuilder({ page })
+                    .include('[data-site-header]')
+                    .analyze()
+                expect(violations.map((v) => v.id)).toEqual([])
+            })
+        })
+    }
+
+    test('follows the theme toggle, not just the browser', async ({ page }) => {
+        await openTall(page)
+        await addWordmark(page)
+        await page.getByRole('radio', { name: 'Light', exact: true }).check()
+        const light = await fillOf(page, 'plain')
+        await page.getByRole('radio', { name: 'Dark', exact: true }).check()
+        const dark = await fillOf(page, 'plain')
+        expect(dark).not.toBe(light)
+        expect(dark).toBe(await headerColor(page))
+    })
+
+    test('--brand-wordmark overrides the color', async ({ page }) => {
+        await openTall(page)
+        await addWordmark(page)
+        await page.evaluate(() =>
+            document.documentElement.style.setProperty(
+                '--brand-wordmark',
+                'rgb(100, 95, 95)',
+            ),
+        )
+        expect(await fillOf(page, 'plain')).toBe('rgb(100, 95, 95)')
+    })
+
+    test('names the home link and shrinks when condensed', async ({ page }) => {
+        await openTall(page)
+        await addWordmark(page)
+        await expect(brand(page)).toHaveAccessibleName('Wordmark')
+        const svg = page.locator('.brand-logo-svg')
+        const full = (await svg.boundingBox())?.height ?? 0
+        expect(full).toBeGreaterThan(20)
+
+        await scrollTo(page, 900)
+        await expect(header(page)).toHaveAttribute('data-condensed', '')
+        await expect
+            .poll(async () => (await svg.boundingBox())?.height ?? 0)
+            .toBeLessThan(full)
+    })
+})
