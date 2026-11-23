@@ -1,9 +1,9 @@
 # voidsite roadmap
 
-Last updated 2026-09-30. It consolidates the 2026-09-30 consultancy session,
-whose voidsite decisions were otherwise recorded only in `rvnflt` plan v3
-§0.2 and the bschool spec. Each workstream below gets its own spec and plan
-before any code.
+Last updated 2026-11-23 (W9 content source, W10 added). It consolidates
+the 2026-09-30 consultancy session, whose voidsite decisions were otherwise
+recorded only in `rvnflt` plan v3 §0.2 and the bschool spec. Each
+workstream below gets its own spec and plan before any code.
 
 ## 1. What voidsite is for
 
@@ -288,9 +288,24 @@ scheduled. Spec: `docs/superpowers/specs/2026-11-03-directory-filter-design.md`.
 
 - Pure filter and permalink logic (`src/lib/directory.ts`) and the vanilla
   browser enhancer (`src/lib/directory-filter.ts`): done, tested.
-- Next, after the spec's open decisions: the `directory` collection, the
-  `[...filters]` route, cards, Playwright coverage.
+- Next: the `[...filters]` route, cards, Playwright coverage. Content
+  source decided 2026-11-23: YAML in git, bundled at build (see W10), not
+  an Emdash collection.
 - Needs: W3 for permalink continuity at cutover.
+
+### W10. Multi-domain contexts (QueerOmaha)
+
+One deployment serving several domains, each a context with its own
+header lockup, menu, discovery files, analytics policy and slice of
+content, with a header switcher between them. First consumer: queeromaha
+.net, .org and .dev. Spec:
+`docs/superpowers/specs/2026-11-23-multi-domain-contexts-design.md`.
+
+- Also carries: events with recurrence presets, a newsletter digest that
+  editors approve by publishing (on #46), and sitewide privacy hardening
+  (observability off, retention job for Emdash's 404 and audit logs,
+  signed warrant canary).
+- Needs: nothing for the contexts core. The directory slice needs W9.
 
 ### Deferred, with the trigger that revives each
 
