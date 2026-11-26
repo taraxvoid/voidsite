@@ -1,0 +1,14 @@
+wrangler.jsonc
+  h_f0add3b575c958 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9aac7c468033966edeefa05a8dcd04604aa5732f",
+  "prompts": {},
+  "humans": {
+    "h_f0add3b575c958": {
+      "author": "void <1711810+taraxvoid@users.noreply.github.com>"
+    }
+  }
+}
