@@ -3,7 +3,9 @@
     "name": "voidsite",
     "main": "./src/worker.ts",
     "compatibility_date": "2026-02-24",
-    "observability.enabled": true,
+    "observability": {
+        "enabled": true
+    },
     "compatibility_flags": ["nodejs_compat"],
     "preview_urls": true,
     // Emdash refuses production setup without its public origin, and derives
