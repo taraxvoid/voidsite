@@ -3,22 +3,27 @@
     "name": "voidsite",
     "main": "./src/worker.ts",
     "compatibility_date": "2026-02-24",
+    "observability": {
+        "enabled": true
+    },
     "compatibility_flags": ["nodejs_compat"],
     "preview_urls": true,
     // Emdash refuses production setup without its public origin, and derives
     // the passkey relying-party id from it. Set it to the production URL.
     "vars": {
         "EMDASH_SITE_URL": "https://example.com",
-        // Contact form (siteConfig.contact.enabled). Secret (wrangler secret
-        // put): TURNSTILE_SECRET. TURNSTILE_HOSTNAMES is comma-separated;
-        // empty refuses every submission.
+        // Contact and newsletter forms (siteConfig.contact/newsletter).
+        // Secrets (wrangler secret put): TURNSTILE_SECRET, and
+        // NEWSLETTER_API_KEY for the newsletter provider.
+        // TURNSTILE_HOSTNAMES is comma-separated; empty refuses every
+        // submission.
         "TURNSTILE_HOSTNAMES": "example.com"
     },
     // Cloudflare Email Sending, from siteConfig.mailFrom: Emdash's sign-in
     // links and invites, and contact-form messages. Onboard the sender
     // domain first (see README).
     "send_email": [{ "name": "EMAIL" }],
-    // Contact-form rate limit (hashed IP, 1 hour TTL). Provisioned on deploy.
+    // Form rate limits (hashed IP, 1 hour TTL). Provisioned on deploy.
     "kv_namespaces": [{ "binding": "RATE_LIMIT" }],
     "d1_databases": [
         {
@@ -38,7 +43,6 @@
     // (see README) and replace the placeholder id. Cron triggers and routes
     // stay top-level only; they do not apply to previews.
     "previews": {
-        // Previews don't auto-provision KV. Create both once (see README) and
         // replace the placeholder ids. SESSION is the Astro adapter's session
         // store; production gets it provisioned on deploy.
         "kv_namespaces": [

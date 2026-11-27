@@ -5,6 +5,7 @@ import { cloudflareEmail } from '@emdash-cms/cloudflare/plugins'
 import { defineConfig } from 'astro/config'
 import emdash from 'emdash/astro'
 import pkg from './package.json' with { type: 'json' }
+import { newsletterSignup } from './src/plugins/newsletter-signup/descriptor.ts'
 import { siteConfig } from './src/site.config.ts'
 
 export default defineConfig({
@@ -25,6 +26,9 @@ export default defineConfig({
                     from: { email: siteConfig.mailFrom, name: siteConfig.name },
                     replyTo: siteConfig.contactEmail,
                 }),
+                // The "Newsletter signup" editor block: offered while the
+                // newsletter is on, rendered (as nothing) either way.
+                newsletterSignup({ offerBlock: siteConfig.newsletter.enabled }),
             ],
         }),
     ],

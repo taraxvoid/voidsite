@@ -1,0 +1,77 @@
+---
+import { MAX_EMAIL } from '../lib/contact'
+import { CTA_DEFAULTS } from '../lib/newsletter-cta'
+import { turnstileSiteKey } from '../lib/turnstile-client'
+import { siteConfig } from '../site.config'
+
+interface Props {
+    /** Form id; the ids of its fields derive from it, so it must be unique. */
+    id: string
+    /** Optional h2 inside the form, which then names it. */
+    heading?: string
+    button?: string
+    /** Inline puts the field and button on one row (wrapping when narrow). */
+    layout?: 'stacked' | 'inline'
+    /** Keep the "Your email" label for screen readers only. */
+    hideLabel?: boolean
+}
+
+const {
+    id,
+    heading,
+    button = CTA_DEFAULTS.button,
+    layout = 'stacked',
+    hideLabel = false,
+} = Astro.props
+const siteKey = turnstileSiteKey(
+    siteConfig.turnstileSiteKey,
+    import.meta.env.DEV,
+)
+---
+
+<form
+    id={id}
+    class:list={['form', { 'form--inline': layout === 'inline' }]}
+    method="POST"
+    action="/api/newsletter"
+    aria-labelledby={heading ? `${id}-heading` : undefined}
+    data-newsletter
+    hidden
+>
+    {heading && <h2 id={`${id}-heading`}>{heading}</h2>}
+    <div class="form-field">
+        <label
+            for={`${id}-email`}
+            class:list={{ 'visually-hidden': hideLabel }}>Your email</label
+        >
+        <input
+            id={`${id}-email`}
+            name="email"
+            type="email"
+            autocomplete="email"
+            maxlength={MAX_EMAIL}
+            required
+        />
+    </div>
+    <div class="honeypot" aria-hidden="true">
+        <label for={`${id}-website`}>Leave this empty</label>
+        <input
+            id={`${id}-website`}
+            name="website"
+            type="text"
+            tabindex="-1"
+            autocomplete="off"
+        />
+    </div>
+    <div id={`${id}-turnstile`} data-turnstile data-sitekey={siteKey}></div>
+    <div>
+        <button type="submit" class="button">{button}</button>
+    </div>
+    <p id={`${id}-status`} class="form-status" role="status" hidden></p>
+</form>
+
+<script>
+    import { initNewsletterForms } from '../lib/newsletter-client'
+
+    initNewsletterForms()
+</script>
