@@ -353,9 +353,11 @@ approval in Emdash so it does not depend on one person:
   - The portal's `prod` GitHub environment deploys only from `main`, with
     required review.
   - Account members' roles are reviewed whenever one is added.
-  - A separate account would isolate fully but needs a separate domain for
-    the intake (a custom domain must be in a zone of the Worker's account);
-    revisit if the threat model changes.
+  - A separate account would isolate fully but, on the free plan, needs a
+    separate domain for the intake: a custom domain must be in a zone of the
+    Worker's account, and delegating `request.queeromaha.org` as a child
+    zone in another account (Cloudflare "Subdomain setup") is
+    Enterprise-only. Revisit if the threat model or plan changes.
 
 ### 4.12 Bundle size (investigation)
 

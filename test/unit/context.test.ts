@@ -225,6 +225,11 @@ describe('resolveContext', () => {
         for (const c of family) {
             for (const path of ['/', `/?context=${c.id}`, '/?context=dev']) {
                 const r = resolveContext(at(`https://${c.host}${path}`), family)
+                expect(r).toMatchObject({
+                    kind: 'context',
+                    context: c,
+                    production: true,
+                })
                 expect(r.kind === 'context' && r.setPreviewCookie).toBeFalsy()
             }
         }
