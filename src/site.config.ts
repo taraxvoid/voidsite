@@ -1,3 +1,5 @@
+import type { ContextInput } from './lib/context'
+
 /**
  * The one file to edit per site. Everything site-specific that the layout and
  * the legal pages need lives here.
@@ -9,6 +11,16 @@ export const siteConfig = {
     description: 'A content site built with Astro and Emdash.',
     /** Canonical origin, no trailing slash. */
     url: 'https://example.com',
+    /**
+     * Optional: serve several domains from this one deploy (W10), each a
+     * context with its own name, label and policies. Leave empty for one
+     * domain: the site is then a single context built from the fields above.
+     * Each entry needs `id` (a slug, never renamed) and `host`; exactly one
+     * is `canonical: true`, and its host must match EMDASH_SITE_URL. Every
+     * host must be a Custom Domain in wrangler.jsonc `routes`. The unit
+     * tests check all of this (test/unit/context-config.test.ts).
+     */
+    contexts: [] as ContextInput[],
     /** Who runs the site, as named in the legal pages. */
     entity: 'Example, LLC',
     /** General contact and accessibility feedback. */
