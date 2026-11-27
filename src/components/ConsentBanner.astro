@@ -1,5 +1,8 @@
 ---
-import { googleEnabled, googlePlan } from '../lib/analytics'
+import { contextAnalytics, googlePlan } from '../lib/analytics'
+
+// Only where the build has a Google tag and the context allows it.
+const { google: googleEnabled } = contextAnalytics(Astro.locals.context)
 ---
 
 {

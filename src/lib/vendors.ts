@@ -1,14 +1,20 @@
 import { siteConfig } from '../site.config'
-import { googleEnabled, posthogEnabled } from './analytics'
+import { contextAnalytics } from './analytics'
 import { providers } from './newsletter'
+import { SITE_CONTEXTS } from './site-contexts'
 
 const { contact, newsletter } = siteConfig
 const newsletterProvider = providers[newsletter.provider]
 
+// A vendor is listed when it runs in any context (W10).
+const running = SITE_CONTEXTS.map((c) => contextAnalytics(c))
+const posthogEnabled = running.some((a) => a.posthog)
+const googleEnabled = running.some((a) => a.google)
+
 /**
  * Everyone who processes visitor data for this build: the vendors listed in
- * site.config.ts plus whichever analytics the build has switched on, so the
- * list can't fall out of step with the site.
+ * site.config.ts plus whichever analytics the build has switched on in any
+ * context, so the list can't fall out of step with the site.
  */
 export const subProcessors = [
     ...siteConfig.subProcessors,

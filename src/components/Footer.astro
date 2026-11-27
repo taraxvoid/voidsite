@@ -1,6 +1,8 @@
 ---
-import { googleEnabled } from '../lib/analytics'
+import { contextAnalytics } from '../lib/analytics'
 import { siteConfig } from '../site.config'
+
+const { google: googleEnabled } = contextAnalytics(Astro.locals.context)
 
 const links = [
     { href: '/privacy', label: 'Privacy' },

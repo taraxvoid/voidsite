@@ -1,17 +1,32 @@
 ---
 import Legal from '../layouts/Legal.astro'
 import {
-    googleEnabled,
+    analyticsSummary,
+    contextAnalytics,
     googlePlan,
-    posthogEnabled,
     posthogHost,
 } from '../lib/analytics'
+import { contextOrigin } from '../lib/context'
 import { providers } from '../lib/newsletter'
 import { siteConfig } from '../site.config'
 
 // Template copy, not legal advice: review it with counsel before launch and
 // keep it in step with what the site actually does (see README). The
 // analytics wording below follows the build's own configuration.
+// Per context (W10): what runs on the site being read, and on a
+// multi-context site a list of what runs on each of the others.
+const { context, contexts, production } = Astro.locals
+const multiContext = contexts.length > 1
+const { google: googleEnabled, posthog: posthogEnabled } =
+    contextAnalytics(context)
+const siteUrl = multiContext
+    ? contextOrigin(Astro.url, context, production)
+    : siteConfig.url
+const siteName = multiContext ? context.name : siteConfig.name
+const perSite = contexts.map((c) => ({
+    host: c.host,
+    summary: analyticsSummary(contextAnalytics(c)),
+}))
 const posthogDomain = new URL(posthogHost).host
 const anyAnalytics = googleEnabled || posthogEnabled
 const host = siteConfig.subProcessors[0]?.name ?? 'our hosting provider'
@@ -20,13 +35,23 @@ const newsletterProvider = providers[siteConfig.newsletter.provider]
 
 <Legal
     title="Privacy"
-    description={`How ${siteConfig.name} handles your data: cookies, storage, analytics and your rights.`}
+    description={`How ${siteName} handles your data: cookies, storage, analytics and your rights.`}
 >
     <p>
-        Welcome to {siteConfig.name}. This page explains, in plain language,
-        what {siteConfig.entity} collects when you visit {siteConfig.url}, and
-        what we don't.
+        Welcome to {siteName}. This page explains, in plain language, what
+        {siteConfig.entity} collects when you visit {siteUrl}, and what we
+        don't.
     </p>
+    {
+        multiContext && (
+            <p>
+                The same policy covers all of our sites:{' '}
+                {perSite.map((s) => s.host).join(', ')}. Cookies and storage
+                belong to each site separately, and the analytics differ by
+                site (see Analytics below).
+            </p>
+        )
+    }
 
     <h2>What are cookies?</h2>
     <p>
@@ -137,6 +162,21 @@ const newsletterProvider = providers[siteConfig.newsletter.provider]
 
     <h2>Analytics</h2>
     {!anyAnalytics && <p>This site doesn't use analytics.</p>}
+    {
+        multiContext && (
+            <>
+                <p>What runs on each of our sites:</p>
+                <ul data-analytics-per-site>
+                    {perSite.map((s) => (
+                        <li>
+                            {s.host}: {s.summary}
+                        </li>
+                    ))}
+                </ul>
+                <p>The rest of this section describes {context.host}.</p>
+            </>
+        )
+    }
     {
         googleEnabled && (
             <>

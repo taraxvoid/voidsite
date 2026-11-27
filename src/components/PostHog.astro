@@ -1,11 +1,14 @@
 ---
-import { analyticsEnabled, posthogHost, posthogToken } from '../lib/analytics'
+import { contextAnalytics, posthogHost, posthogToken } from '../lib/analytics'
+
+const { posthog } = contextAnalytics(Astro.locals.context)
 ---
 
 {/* Cookieless: nothing is stored on the visitor's device. Renders nothing
-    unless PUBLIC_POSTHOG_PROJECT_TOKEN was set at build time. */}
+    unless PUBLIC_POSTHOG_PROJECT_TOKEN was set at build time and the
+    request's context allows PostHog. */}
 {
-    analyticsEnabled && (
+    posthog && (
         <script
             is:inline
             define:vars={{ apiKey: posthogToken, apiHost: posthogHost }}

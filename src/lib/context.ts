@@ -19,6 +19,8 @@ export interface SiteContext {
     canonical: boolean
     /** Public name of this context. */
     name: string
+    /** One sentence about this context, for llms.txt and JSON-LD. */
+    description: string
     /** Label after the divider in the header lockup, e.g. '.net'. */
     label: string
     /** One line in the switcher list. */
@@ -31,6 +33,17 @@ export interface SiteContext {
     accent: string
     /** Header brand; empty fields fall back to siteConfig.header. */
     header: ContextHeader
+    /**
+     * Which of the build's analytics may run in this context. Both default
+     * to true: a tool runs where its env var is set and the context allows
+     * it (src/lib/analytics.ts contextAnalytics).
+     */
+    analytics: ContextAnalytics
+}
+
+export interface ContextAnalytics {
+    posthog: boolean
+    google: boolean
 }
 
 /** The brand images a context may set for its header lockup. */
@@ -43,13 +56,16 @@ export interface ContextHeader {
 
 /** What a site may write in site.config.ts: everything but id and host is optional. */
 export type ContextInput = Pick<SiteContext, 'id' | 'host'> &
-    Partial<Omit<SiteContext, 'id' | 'host' | 'header'>> & {
+    Partial<Omit<SiteContext, 'id' | 'host' | 'header' | 'analytics'>> & {
         header?: Partial<ContextHeader>
+        analytics?: Partial<ContextAnalytics>
     }
 
 /** The top-level fields a context inherits. */
 export interface ContextDefaults {
     name: string
+    /** siteConfig.description; contexts without their own inherit it. */
+    description?: string
     /** Canonical origin of the site, e.g. 'https://example.com'. */
     url: string
     /** siteConfig.header: the mark and wordmark every context starts from. */
@@ -82,6 +98,7 @@ export function buildContexts(
     const base = {
         canonical: false,
         name: defaults.name,
+        description: defaults.description ?? '',
         label: '',
         tagline: '',
         menu: 'primary',
@@ -100,6 +117,7 @@ export function buildContexts(
                 host: hostOf(defaults.url),
                 canonical: true,
                 header,
+                analytics: { posthog: true, google: true },
             },
         ]
     }
@@ -111,6 +129,10 @@ export function buildContexts(
         header: {
             mark: input.header?.mark || header.mark,
             wordmark: input.header?.wordmark || header.wordmark,
+        },
+        analytics: {
+            posthog: input.analytics?.posthog ?? true,
+            google: input.analytics?.google ?? true,
         },
     }))
 }
@@ -247,6 +269,19 @@ export function resolveContext(
         if (kept) return { kind: 'context', context: kept, production: false }
     }
     return { kind: 'context', context: canonical, production: false }
+}
+
+/**
+ * The origin to put in this context's absolute URLs (sitemaps, robots.txt,
+ * llms.txt, JSON-LD). On its own host that is `https://<host>`; on a preview
+ * host it is the preview's origin, so links keep working while reviewing.
+ */
+export function contextOrigin(
+    url: URL,
+    context: SiteContext,
+    production: boolean,
+): string {
+    return production ? `https://${context.host}` : url.origin
 }
 
 /** The Set-Cookie value for the preview cookie: session-only, this host only. */
