@@ -21,6 +21,10 @@ export const siteConfig = {
      * is `canonical: true`, and its host must match EMDASH_SITE_URL. Every
      * host must be a Custom Domain in wrangler.jsonc `routes`. The unit
      * tests check all of this (test/unit/context-config.test.ts).
+     * With two or more, the header shows a switcher: `label` (e.g. '.net')
+     * after the divider, `tagline` in the list, optional `accent` (a CSS
+     * color for the divider, as --context-accent) and `header: { mark,
+     * wordmark }` overriding `header` below for that context.
      */
     contexts: [] as ContextInput[],
     /** Who runs the site, as named in the legal pages. */

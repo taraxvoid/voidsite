@@ -1,3 +1,5 @@
+import { PREVIEW_PARAM, type SiteContext } from './context'
+
 /**
  * Condensing header: shrink while the visitor scrolls down, expand again as
  * soon as they scroll back up. Pure so it can be unit tested; the browser
@@ -84,4 +86,54 @@ export function scrollBehaviorFor(
     prefersReducedMotion: boolean,
 ): ScrollBehavior {
     return prefersReducedMotion ? 'auto' : 'smooth'
+}
+
+/** One entry in the header's context switcher (W10, spec section 4.3). */
+export interface SwitcherLink {
+    id: string
+    href: string
+    host: string
+    tagline: string
+    /** `aria-current` for the context being viewed. */
+    current?: 'page' | 'true'
+}
+
+export interface SwitcherOptions {
+    /** The request came in on a context's own host (Astro.locals.production). */
+    production: boolean
+    /** Path of the page being rendered. */
+    pathname: string
+}
+
+/**
+ * The switcher's links: one per context, to that context's root. On a
+ * production host they go to the other domain; on a preview host (workers.dev,
+ * a Worker Preview, localhost) they select the context with `?context=`.
+ * Fewer than two contexts means no switcher, so the list is empty.
+ */
+export function switcherLinks(
+    contexts: readonly SiteContext[],
+    current: SiteContext,
+    { production, pathname }: SwitcherOptions,
+): SwitcherLink[] {
+    if (contexts.length < 2) return []
+    return contexts.map((c) => ({
+        id: c.id,
+        href: production
+            ? `https://${c.host}/`
+            : `/?${PREVIEW_PARAM}=${encodeURIComponent(c.id)}`,
+        host: c.host,
+        tagline: c.tagline,
+        current:
+            c.id === current.id
+                ? pathname === '/'
+                    ? 'page'
+                    : 'true'
+                : undefined,
+    }))
+}
+
+/** The switcher summary's accessible name. */
+export function switcherName(current: SiteContext): string {
+    return `Switch site, current: ${current.host}`
 }

@@ -29,17 +29,31 @@ export interface SiteContext {
     indexable: boolean
     /** Optional CSS color, exposed as --context-accent. */
     accent: string
+    /** Header brand; empty fields fall back to siteConfig.header. */
+    header: ContextHeader
+}
+
+/** The brand images a context may set for its header lockup. */
+export interface ContextHeader {
+    /** Square mark: a path under public/ or a URL. Empty means none. */
+    mark: string
+    /** Wordmark SVG under src/brand/. Empty means the logo or the name. */
+    wordmark: string
 }
 
 /** What a site may write in site.config.ts: everything but id and host is optional. */
 export type ContextInput = Pick<SiteContext, 'id' | 'host'> &
-    Partial<Omit<SiteContext, 'id' | 'host'>>
+    Partial<Omit<SiteContext, 'id' | 'host' | 'header'>> & {
+        header?: Partial<ContextHeader>
+    }
 
 /** The top-level fields a context inherits. */
 export interface ContextDefaults {
     name: string
     /** Canonical origin of the site, e.g. 'https://example.com'. */
     url: string
+    /** siteConfig.header: the mark and wordmark every context starts from. */
+    header?: Partial<ContextHeader>
 }
 
 /** Session cookie that pins a context on non-production hosts only. */
@@ -74,6 +88,10 @@ export function buildContexts(
         indexable: true,
         accent: '',
     }
+    const header: ContextHeader = {
+        mark: defaults.header?.mark ?? '',
+        wordmark: defaults.header?.wordmark ?? '',
+    }
     if (!inputs || inputs.length === 0) {
         return [
             {
@@ -81,6 +99,7 @@ export function buildContexts(
                 id: 'default',
                 host: hostOf(defaults.url),
                 canonical: true,
+                header,
             },
         ]
     }
@@ -88,6 +107,7 @@ export function buildContexts(
         ...base,
         ...input,
         host: input.host.toLowerCase(),
+        header: { ...header, ...input.header },
     }))
 }
 

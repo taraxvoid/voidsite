@@ -5,5 +5,7 @@ declare namespace App {
         context: import('./lib/context').SiteContext
         /** Every context of the site, canonical included. */
         contexts: import('./lib/context').SiteContext[]
+        /** The request came in on a context's own host, not a preview host. */
+        production: boolean
     }
 }

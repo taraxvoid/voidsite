@@ -47,6 +47,25 @@ describe('buildContexts', () => {
         expect(dev.indexable).toBe(false)
         expect(family.find((c) => c.id === 'org')?.indexable).toBe(true)
     })
+
+    test('header brand: site defaults, overridden per field', () => {
+        const contexts = buildContexts(
+            { ...defaults, header: { mark: '/mark.svg', wordmark: '' } },
+            [
+                { id: 'net', host: 'queeromaha.net', canonical: true },
+                {
+                    id: 'org',
+                    host: 'queeromaha.org',
+                    header: { wordmark: '/src/brand/org.svg' },
+                },
+            ],
+        )
+        expect(contexts.map((c) => c.header)).toEqual([
+            { mark: '/mark.svg', wordmark: '' },
+            { mark: '/mark.svg', wordmark: '/src/brand/org.svg' },
+        ])
+        expect(single[0].header).toEqual({ mark: '', wordmark: '' })
+    })
 })
 
 describe('validateContexts', () => {
