@@ -107,7 +107,11 @@ export function buildContexts(
         ...base,
         ...input,
         host: input.host.toLowerCase(),
-        header: { ...header, ...input.header },
+        // Empty means inherit, field by field (see SiteContext.header).
+        header: {
+            mark: input.header?.mark || header.mark,
+            wordmark: input.header?.wordmark || header.wordmark,
+        },
     }))
 }
 

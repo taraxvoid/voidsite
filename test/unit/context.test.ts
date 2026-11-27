@@ -58,11 +58,13 @@ describe('buildContexts', () => {
                     host: 'queeromaha.org',
                     header: { wordmark: '/src/brand/org.svg' },
                 },
+                { id: 'dev', host: 'queeromaha.dev', header: { mark: '' } },
             ],
         )
         expect(contexts.map((c) => c.header)).toEqual([
             { mark: '/mark.svg', wordmark: '' },
             { mark: '/mark.svg', wordmark: '/src/brand/org.svg' },
+            { mark: '/mark.svg', wordmark: '' },
         ])
         expect(single[0].header).toEqual({ mark: '', wordmark: '' })
     })
