@@ -111,7 +111,7 @@ Previews don't auto-provision D1 or KV, so create them once as in setup step 4. 
 
 ## Editing content
 
-Editors use `/_emdash/admin`. Content models live in `seed/seed.json`; `AGENTS.md` and `.agents/skills/` (from Emdash) describe them for coding agents. The public sitemap at `/sitemap.xml` and its collection sitemaps come from Emdash.
+Editors use `/_emdash/admin`. Content models live in `seed/seed.json`; `AGENTS.md` and `.agents/skills/` (from Emdash) describe them for coding agents. The public sitemap at `/sitemap.xml` and its collection sitemaps come from Emdash (through `src/pages/sitemap*.ts`, so a multi-context site gives each context its own).
 
 ## Caveats
 

@@ -35,14 +35,19 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
     ctx.locals.contexts = CONTEXTS
     ctx.locals.production = resolution.production
     const response = await next()
-    if (!resolution.setPreviewCookie) return response
+    const noindex = !resolution.context.indexable
+    if (!resolution.setPreviewCookie && !noindex) return response
     const out = new Response(response.body, response)
-    out.headers.append(
-        'Set-Cookie',
-        previewCookie(
-            resolution.setPreviewCookie,
-            ctx.url.protocol === 'https:',
-        ),
-    )
+    // Every response of a context that keeps out of search, not only HTML.
+    if (noindex) out.headers.set('X-Robots-Tag', 'noindex')
+    if (resolution.setPreviewCookie) {
+        out.headers.append(
+            'Set-Cookie',
+            previewCookie(
+                resolution.setPreviewCookie,
+                ctx.url.protocol === 'https:',
+            ),
+        )
+    }
     return out
 })

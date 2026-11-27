@@ -34,7 +34,7 @@ test('names the current site and lists every context', async ({ page }) => {
     await expect(summary(page)).toHaveText('.com')
     await summary(page).click()
     const links = switcher(page).getByRole('link')
-    await expect(links).toHaveCount(2)
+    await expect(links).toHaveCount(3)
     await expect(links.nth(0)).toHaveAttribute('href', '/?context=main')
     await expect(links.nth(0)).toHaveAttribute('aria-current', 'page')
     await expect(links.nth(1)).toHaveAttribute('href', '/?context=labs')
