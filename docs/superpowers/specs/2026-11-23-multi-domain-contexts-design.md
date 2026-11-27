@@ -96,7 +96,11 @@ Checked against Emdash 1.0.1 (`emdash` on npm) and Cloudflare's docs on
 - **Route precedence.** A Worker route on a hostname takes precedence over a
   Custom Domain Worker on the same hostname (Cloudflare, "Routes"). Not used
   here: the intake has its own subdomain, so the two Workers never share an
-  origin.
+  origin. But the portal's token holds Workers Routes Write on the
+  `queeromaha.org` zone, so it could add such a route and take over
+  `request.queeromaha.org` (see 4.11, intake isolation).
+- **D1 Write has no per-database scope.** A token with it can read and write
+  every D1 database in the account, the intake's included.
 
 ## 4. Design
 
@@ -331,8 +335,27 @@ approval in Emdash so it does not depend on one person:
   three zones without extra config.
 - Previews: unchanged (separate D1, R2, KV). Contexts are reviewed with
   `?context=` (4.2).
-- The intake Worker deploys from its own repo with its own token; the two
-  share no bindings.
+- The intake Worker deploys from its own (private) repo with its own token;
+  the two share no bindings.
+- **Intake isolation** (decided 2026-11-26, queeromaha/queeromaha.org#13):
+  the portal and the intake stay in one Cloudflare account and the
+  `queeromaha.org` zone, hardened instead of split:
+  - The portal's voidflow envs never set `d1: true`, so its tokens never get
+    account-wide D1 Write. Emdash applies its migrations at runtime; any
+    manual migration uses an admin token, not CI.
+  - Neither Worker uses Worker routes, so the `queeromaha.org` zone should
+    list none. voidlight (or a scheduled job with a read-only token) alerts
+    on any.
+  - The intake answers `GET /api/proof?n=<nonce>` with
+    `HMAC-SHA256(PROOF_KEY, hostname + "\n" + nonce)`. voidlight sends a
+    fresh nonce and alerts on a mismatch, so a takeover cannot copy or
+    replay the answer. Only the intake and voidlight hold `PROOF_KEY`.
+  - The portal's `prod` GitHub environment deploys only from `main`, with
+    required review.
+  - Account members' roles are reviewed whenever one is added.
+  - A separate account would isolate fully but needs a separate domain for
+    the intake (a custom domain must be in a zone of the Worker's account);
+    revisit if the threat model changes.
 
 ### 4.12 Bundle size (investigation)
 
