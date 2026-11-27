@@ -34,14 +34,33 @@ export const AI_ANSWER_BOTS = [
 export function buildRobots({
     origin,
     aiTraining,
+    indexable = true,
 }: {
     origin: string
     aiTraining: boolean
+    /**
+     * False for a context that keeps out of search (W10). Its pages carry
+     * noindex (meta and X-Robots-Tag), and that is the control: robots.txt
+     * still lets crawlers fetch them, because a disallowed page is never
+     * fetched, so its noindex is never seen and a linked URL can still be
+     * listed. It drops the sitemap and says no to search and AI answers.
+     */
+    indexable?: boolean
 }): string {
-    const signal = `ai-train=${aiTraining ? 'yes' : 'no'}, search=yes, ai-input=yes`
+    const train = `ai-train=${aiTraining ? 'yes' : 'no'}`
+    const signal = indexable
+        ? `${train}, search=yes, ai-input=yes`
+        : `${train}, search=no, ai-input=no`
     const lines = [
-        '# Content signals (https://contentsignals.org): search and AI answers',
-        '# are welcome; training use follows the ai-train value below. Any',
+        ...(indexable
+            ? [
+                  '# Content signals (https://contentsignals.org): search and AI answers',
+                  '# are welcome; training use follows the ai-train value below. Any',
+              ]
+            : [
+                  '# Content signals (https://contentsignals.org): this site is not for',
+                  '# search or AI answers, and its pages say noindex. Any',
+              ]),
         '# restriction is an express reservation of rights under Article 4 of',
         '# EU Directive 2019/790.',
         'User-agent: *',
@@ -57,6 +76,6 @@ export function buildRobots({
             lines.push(`User-agent: ${bot}`, 'Disallow: /', '')
         }
     }
-    lines.push(`Sitemap: ${origin}/sitemap.xml`, '')
+    if (indexable) lines.push(`Sitemap: ${origin}/sitemap.xml`, '')
     return lines.join('\n')
 }

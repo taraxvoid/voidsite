@@ -67,4 +67,24 @@ describe('buildRobots', () => {
             expect(answer.has(bot)).toBe(false)
         }
     })
+
+    describe('a context kept out of search', () => {
+        const body = buildRobots({
+            origin,
+            aiTraining: false,
+            indexable: false,
+        })
+
+        it('says no to search and AI answers and drops the sitemap', () => {
+            expect(body).toContain(
+                'Content-Signal: ai-train=no, search=no, ai-input=no',
+            )
+            expect(body).not.toContain('Sitemap:')
+        })
+
+        it('still lets crawlers fetch pages, so they see noindex', () => {
+            expect(body).toMatch(/User-agent: \*\n(?:.*\n)*?Allow: \/\n/)
+            expect(body).toContain('Disallow: /_emdash/')
+        })
+    })
 })

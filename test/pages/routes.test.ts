@@ -1,12 +1,29 @@
 import type { APIContext } from 'astro'
 import { describe, expect, test } from 'vitest'
+import { buildContexts } from '../../src/lib/context'
 import { GET as llms } from '../../src/pages/llms.txt'
 import { GET as robots } from '../../src/pages/robots.txt'
 
 // Call the route handlers directly, like queeromaha's page tests: fast, and
-// no server needed. Only `url` is read.
-const ctx = (origin: string) =>
-    ({ url: new URL('/', origin) }) as unknown as APIContext
+// no server needed. Only `url` and the context the middleware puts on
+// `locals` are read.
+const contexts = buildContexts(
+    { name: 'Chantilly', url: 'https://example.com' },
+    [
+        { id: 'main', host: 'example.com', canonical: true },
+        { id: 'labs', host: 'example.org', name: 'Labs' },
+        { id: 'quiet', host: 'example.net', indexable: false },
+    ],
+)
+const ctx = (origin: string, id = 'main', production = false) =>
+    ({
+        url: new URL('/', origin),
+        locals: {
+            context: contexts.find((c) => c.id === id),
+            contexts,
+            production,
+        },
+    }) as unknown as APIContext
 
 describe('GET /robots.txt', () => {
     test('sets plain text content type', async () => {
@@ -47,5 +64,27 @@ describe('GET /llms.txt', () => {
         expect(body).toMatch(/^# .+/)
         expect(body).toContain('](https://example.com/privacy)')
         expect(body).toContain('https://example.com/sitemap.xml')
+    })
+})
+
+describe('per context', () => {
+    test('robots.txt names the context sitemap on its own host', async () => {
+        const body = await (
+            await robots(ctx('https://example.org', 'labs', true))
+        ).text()
+        expect(body).toContain('Sitemap: https://example.org/sitemap.xml')
+    })
+
+    test('a non-indexable context has no llms.txt and no sitemap line', async () => {
+        const quiet = ctx('https://example.net', 'quiet', true)
+        expect((await llms(quiet)).status).toBe(404)
+        expect(await (await robots(quiet)).text()).not.toContain('Sitemap:')
+    })
+
+    test('llms.txt is named after the context', async () => {
+        const body = await (
+            await llms(ctx('https://example.org', 'labs', true))
+        ).text()
+        expect(body).toMatch(/^# Labs\n/)
     })
 })
