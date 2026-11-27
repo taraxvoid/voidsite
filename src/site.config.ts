@@ -24,7 +24,10 @@ export const siteConfig = {
      * With two or more, the header shows a switcher: `label` (e.g. '.net')
      * after the divider, `tagline` in the list, optional `accent` (a CSS
      * color for the divider, as --context-accent) and `header: { mark,
-     * wordmark }` overriding `header` below for that context.
+     * wordmark }` overriding `header` below for that context. Every
+     * context may set `description`, `indexable: false` (noindex, no
+     * sitemap) and `analytics: { posthog, google }` to switch off a tool the
+     * build has; the privacy page follows.
      */
     contexts: [] as ContextInput[],
     /** Who runs the site, as named in the legal pages. */

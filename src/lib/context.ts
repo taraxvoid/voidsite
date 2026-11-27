@@ -33,6 +33,17 @@ export interface SiteContext {
     accent: string
     /** Header brand; empty fields fall back to siteConfig.header. */
     header: ContextHeader
+    /**
+     * Which of the build's analytics may run in this context. Both default
+     * to true: a tool runs where its env var is set and the context allows
+     * it (src/lib/analytics.ts contextAnalytics).
+     */
+    analytics: ContextAnalytics
+}
+
+export interface ContextAnalytics {
+    posthog: boolean
+    google: boolean
 }
 
 /** The brand images a context may set for its header lockup. */
@@ -45,8 +56,9 @@ export interface ContextHeader {
 
 /** What a site may write in site.config.ts: everything but id and host is optional. */
 export type ContextInput = Pick<SiteContext, 'id' | 'host'> &
-    Partial<Omit<SiteContext, 'id' | 'host' | 'header'>> & {
+    Partial<Omit<SiteContext, 'id' | 'host' | 'header' | 'analytics'>> & {
         header?: Partial<ContextHeader>
+        analytics?: Partial<ContextAnalytics>
     }
 
 /** The top-level fields a context inherits. */
@@ -105,6 +117,7 @@ export function buildContexts(
                 host: hostOf(defaults.url),
                 canonical: true,
                 header,
+                analytics: { posthog: true, google: true },
             },
         ]
     }
@@ -116,6 +129,10 @@ export function buildContexts(
         header: {
             mark: input.header?.mark || header.mark,
             wordmark: input.header?.wordmark || header.wordmark,
+        },
+        analytics: {
+            posthog: input.analytics?.posthog ?? true,
+            google: input.analytics?.google ?? true,
         },
     }))
 }

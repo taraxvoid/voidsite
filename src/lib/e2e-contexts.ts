@@ -6,7 +6,8 @@ import type { ContextInput } from './context'
  * declaring one. Tests run on localhost, a preview host: the canonical
  * context answers by default and `?context=<id>` selects another. `labs`
  * has a mark (inline, so no file ships in real builds) to cover the
- * condensed lockup with a mark; `quiet` is not indexable.
+ * condensed lockup with a mark, and runs no Google tag; `quiet` is not
+ * indexable.
  */
 const MARK =
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18' fill='%23b0457a'/%3E%3C/svg%3E"
@@ -26,6 +27,7 @@ export const E2E_CONTEXTS: ContextInput[] = [
         tagline: 'Side projects',
         accent: '#b0457a',
         header: { mark: MARK },
+        analytics: { google: false },
     },
     {
         id: 'quiet',
