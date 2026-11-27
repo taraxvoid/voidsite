@@ -221,6 +221,158 @@ a {
     }
 }
 
+/*
+ * Context lockup and switcher (W10): [mark][wordmark] | [label v]. Only
+ * rendered with two or more contexts. The panel is positioned, so opening it
+ * never changes the bar's height (and never expands a condensed header).
+ */
+.lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.site-header[data-has-switcher] .brand {
+    min-block-size: 2.75rem;
+}
+
+.lockup-divider {
+    display: block;
+    inline-size: 1px;
+    block-size: 1.75rem;
+    background: var(--context-accent, var(--muted));
+}
+
+.switcher {
+    position: relative;
+}
+
+.switcher > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+    justify-content: center;
+    padding-inline: 0.25rem;
+    border-radius: 0.375rem;
+    color: var(--fg);
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+}
+
+.switcher > summary::-webkit-details-marker {
+    display: none;
+}
+
+.switcher > summary:focus-visible,
+.switcher-panel a:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+}
+
+/* Same collapse as the wordmark: a grid track going 1fr to 0fr. */
+.switcher-label {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.switcher-label-inner {
+    min-inline-size: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.switcher-chevron {
+    flex: none;
+}
+
+.switcher[open] .switcher-chevron {
+    rotate: 180deg;
+}
+
+.switcher-panel {
+    position: absolute;
+    inset-block-start: calc(100% + 0.25rem);
+    inset-inline-start: 0;
+    z-index: 10;
+    min-inline-size: 14rem;
+    max-inline-size: calc(100vw - 2rem);
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.15);
+}
+
+.switcher-panel a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-block-size: 2.75rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    color: var(--fg);
+    text-decoration: none;
+}
+
+.switcher-panel a:hover {
+    background: var(--border);
+}
+
+.switcher-panel a[aria-current] .switcher-host {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.switcher-host {
+    font-weight: 700;
+}
+
+.switcher-tagline {
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+.site-header[data-condensed][data-has-mark] .lockup {
+    gap: 0;
+}
+
+.site-header[data-condensed][data-has-mark] .lockup-divider {
+    inline-size: 0;
+    opacity: 0;
+}
+
+.site-header[data-condensed][data-has-mark] .switcher-label {
+    grid-template-columns: 0fr;
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .site-header[data-condense] .lockup {
+        transition: gap 0.2s ease-out;
+    }
+
+    .site-header[data-condense] .lockup-divider {
+        transition:
+            inline-size 0.2s ease-out,
+            opacity 0.15s;
+    }
+
+    .site-header[data-condense] .switcher-label {
+        transition:
+            grid-template-columns 0.2s ease-out,
+            opacity 0.15s;
+    }
+
+    .switcher-chevron {
+        transition: rotate 0.15s ease-out;
+    }
+}
+
 .site-footer {
     border-top-width: 1px;
     margin-top: 3rem;

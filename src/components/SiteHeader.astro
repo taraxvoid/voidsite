@@ -1,4 +1,5 @@
 ---
+import { switcherLinks, switcherName } from '../lib/header'
 import { resolveWordmark } from '../lib/wordmark'
 import { siteConfig } from '../site.config'
 import ThemeToggle from './ThemeToggle.astro'
@@ -11,8 +12,17 @@ interface Props {
     } | null
 }
 
-const { siteTitle, siteLogo, menu } = Astro.props
-const { condense, mark, wordmark } = siteConfig.header
+const { siteLogo, menu } = Astro.props
+const { condense } = siteConfig.header
+const { context, contexts, production } = Astro.locals
+// Each context brings its own mark and wordmark (falling back to
+// siteConfig.header) and, on a multi-context site, its own name.
+const { mark, wordmark } = context.header
+const siteTitle = contexts.length > 1 ? context.name : Astro.props.siteTitle
+const switcher = switcherLinks(contexts, context, {
+    production,
+    pathname: Astro.url.pathname,
+})
 
 // Bundled at build time: a Worker has no filesystem to read src/ from.
 const wordmarkFiles = import.meta.glob<string>('/src/brand/*.svg', {
@@ -33,41 +43,102 @@ const wordmarkSvg = resolveWordmark(wordmarkFiles, wordmark)
   Shrinking never moves the page: the outer <header> keeps the full-size
   height (min-block-size, set by the script), the visible bar inside it
   shrinks, and the strip it leaves is transparent and lets clicks through.
+
+  With two or more contexts (W10), the lockup reads [mark][wordmark] | [label v]:
+  the label opens a <details> switcher listing every context's home. It is a
+  disclosure, not a menu, so it works without JS; the script adds Escape and
+  outside-click to close it. Condensed with a mark, the wordmark, divider and
+  label slide away and the chevron stays beside the mark.
 */}
 <header
     class="site-header"
     data-site-header
     data-condense={condense ? '' : undefined}
     data-has-mark={mark ? '' : undefined}
+    data-has-switcher={switcher.length > 0 ? '' : undefined}
+    style={context.accent ? `--context-accent: ${context.accent}` : undefined}
 >
     <div class="site-header-bar">
         <nav aria-label="Main">
-            <a class="brand" href="/" data-brand>
-                {mark && <img class="brand-mark" src={mark} alt="" />}
-                <span class="brand-wordmark">
-                    <span class="brand-wordmark-inner">
-                        {
-                            wordmarkSvg ? (
-                                <span
-                                    class="brand-logo brand-logo-svg"
-                                    role="img"
-                                    aria-label={siteTitle}
-                                >
-                                    <Fragment set:html={wordmarkSvg} />
-                                </span>
-                            ) : siteLogo ? (
-                                <img
-                                    class="brand-logo"
-                                    src={siteLogo.url}
-                                    alt={siteLogo.alt || siteTitle}
-                                />
-                            ) : (
-                                siteTitle
-                            )
-                        }
+            <div class="lockup">
+                <a class="brand" href="/" data-brand>
+                    {mark && <img class="brand-mark" src={mark} alt="" />}
+                    <span class="brand-wordmark">
+                        <span class="brand-wordmark-inner">
+                            {
+                                wordmarkSvg ? (
+                                    <span
+                                        class="brand-logo brand-logo-svg"
+                                        role="img"
+                                        aria-label={siteTitle}
+                                    >
+                                        <Fragment set:html={wordmarkSvg} />
+                                    </span>
+                                ) : siteLogo ? (
+                                    <img
+                                        class="brand-logo"
+                                        src={siteLogo.url}
+                                        alt={siteLogo.alt || siteTitle}
+                                    />
+                                ) : (
+                                    siteTitle
+                                )
+                            }
+                        </span>
                     </span>
-                </span>
-            </a>
+                </a>
+                {
+                    switcher.length > 0 && (
+                        <>
+                            <span class="lockup-divider" aria-hidden="true" />
+                            <details class="switcher" data-switcher>
+                                <summary aria-label={switcherName(context)}>
+                                    <span class="switcher-label">
+                                        <span class="switcher-label-inner">
+                                            {context.label || context.name}
+                                        </span>
+                                    </span>
+                                    <svg
+                                        class="switcher-chevron"
+                                        aria-hidden="true"
+                                        viewBox="0 0 16 16"
+                                        width="16"
+                                        height="16"
+                                    >
+                                        <path
+                                            d="M4 6l4 4 4-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                    </svg>
+                                </summary>
+                                <ul class="switcher-panel">
+                                    {switcher.map((link) => (
+                                        <li>
+                                            <a
+                                                href={link.href}
+                                                aria-current={link.current}
+                                            >
+                                                <span class="switcher-host">
+                                                    {link.host}
+                                                </span>
+                                                {link.tagline && (
+                                                    <span class="switcher-tagline">
+                                                        {link.tagline}
+                                                    </span>
+                                                )}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </details>
+                        </>
+                    )
+                }
+            </div>
             {
                 menu?.items.map((item) => (
                     <a
@@ -99,6 +170,25 @@ const wordmarkSvg = resolveWordmark(wordmarkFiles, wordmark)
         nextHeaderState,
         scrollBehaviorFor,
     } from "../lib/header";
+
+    // Context switcher: Escape closes it and puts focus back on its
+    // summary; a click anywhere outside closes it.
+    for (const switcher of document.querySelectorAll<HTMLDetailsElement>(
+        "[data-switcher]",
+    )) {
+        const summary = switcher.querySelector("summary");
+        document.addEventListener("keydown", (event) => {
+            if (event.key !== "Escape" || !switcher.open) return;
+            const hadFocus = switcher.contains(document.activeElement);
+            switcher.open = false;
+            if (hadFocus) summary?.focus();
+        });
+        document.addEventListener("click", (event) => {
+            if (switcher.open && !switcher.contains(event.target as Node)) {
+                switcher.open = false;
+            }
+        });
+    }
 
     const header = document.querySelector<HTMLElement>(
         "[data-site-header][data-condense]",

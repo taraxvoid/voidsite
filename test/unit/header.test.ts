@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { buildContexts } from '../../src/lib/context'
 import {
     DEFAULT_CONDENSE_OPTIONS,
     type HeaderState,
@@ -6,6 +7,8 @@ import {
     isPlainPrimaryClick,
     nextHeaderState,
     scrollBehaviorFor,
+    switcherLinks,
+    switcherName,
 } from '../../src/lib/header'
 
 const { threshold, tolerance } = DEFAULT_CONDENSE_OPTIONS
@@ -120,5 +123,76 @@ describe('scrollBehaviorFor', () => {
     it('jumps for reduced motion and glides otherwise', () => {
         expect(scrollBehaviorFor(true)).toBe('auto')
         expect(scrollBehaviorFor(false)).toBe('smooth')
+    })
+})
+
+describe('switcherLinks', () => {
+    const family = buildContexts(
+        { name: 'QueerOmaha', url: 'https://queeromaha.net' },
+        [
+            {
+                id: 'net',
+                host: 'queeromaha.net',
+                canonical: true,
+                tagline: 'Directory and events',
+            },
+            { id: 'org', host: 'queeromaha.org', tagline: 'Resources' },
+            { id: 'dev', host: 'queeromaha.dev' },
+        ],
+    )
+    const [net, org] = family
+
+    it('is empty for a single-context site', () => {
+        const single = buildContexts(
+            { name: 'Chantilly', url: 'https://example.com' },
+            [],
+        )
+        expect(
+            switcherLinks(single, single[0], {
+                production: true,
+                pathname: '/',
+            }),
+        ).toEqual([])
+    })
+
+    it('links each context root on its own domain in production', () => {
+        const links = switcherLinks(family, org, {
+            production: true,
+            pathname: '/about',
+        })
+        expect(links.map((l) => l.href)).toEqual([
+            'https://queeromaha.net/',
+            'https://queeromaha.org/',
+            'https://queeromaha.dev/',
+        ])
+        expect(links[0]).toMatchObject({
+            host: 'queeromaha.net',
+            tagline: 'Directory and events',
+        })
+    })
+
+    it('selects contexts with ?context= on preview hosts', () => {
+        const links = switcherLinks(family, net, {
+            production: false,
+            pathname: '/',
+        })
+        expect(links.map((l) => l.href)).toEqual([
+            '/?context=net',
+            '/?context=org',
+            '/?context=dev',
+        ])
+    })
+
+    it('marks the current context, as the page only on its home', () => {
+        const current = (pathname: string) =>
+            switcherLinks(family, org, { production: true, pathname }).map(
+                (l) => l.current,
+            )
+        expect(current('/')).toEqual([undefined, 'page', undefined])
+        expect(current('/privacy')).toEqual([undefined, 'true', undefined])
+    })
+
+    it('names the summary after the current host', () => {
+        expect(switcherName(org)).toBe('Switch site, current: queeromaha.org')
     })
 })
